@@ -1,67 +1,53 @@
 <script lang="ts">
-  import { animateTiles } from '$lib/core/animation'
-  import { addTile, moveTiles } from '$lib/core/game'
-  import type { Grid } from '$lib/types/grid.type'
-  import { draw } from '$lib/core/animation'
+  import { createCanvas } from '$lib/core/animation.svelte'
+  import { createGrid } from '$lib/core/grid.svelte'
+  import type { CanvasState } from '$lib/types/canvas.type'
 
-  let { width = 400 } = $props()
+  let { width = 400, size = 4 } = $props()
 
-  const grid: Grid = [
-    [
-      { value: 2, y: 0, x: 0 },
-      null,
-      null,
-      null,
-    ],
-    [
-      null,
-      null,
-      null,
-      null,
-    ],
-    [
-      null,
-      null,
-      { value: 2, y: 2, x: 2 },
-      null,
-    ],
-    [
-      null,
-      null,
-      null,
-      null,
-    ],
-  ]
+  const state = createGrid(size)
+  let canvas: CanvasState, element: HTMLCanvasElement
 
-  let canvas: HTMLCanvasElement
-  let animating = false
-
+  /**
+   * It determines which direction to move the tiles based on the key that is pressed. It updates the state and animates the canvas
+   * if any tiles are moved. It then adds a new tile to the grid and draws it on the canvas.
+   *
+   * @summary Handles the keydown event.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {KeyboardEvent} event The keydown event.
+   */
   const onkeydown = (event: KeyboardEvent): void => {
-    const params: Record<string, [boolean, boolean]> = {
-      ArrowRight: [true, true],
-      ArrowLeft: [false, true],
-      ArrowDown: [true, false],
-      ArrowUp: [false, false],
+    if (canvas.animating) return
+
+    const directions: Record<string, 'up' | 'down' | 'left' | 'right'> = {
+      ArrowUp: 'up',
+      ArrowDown: 'down',
+      ArrowLeft: 'left',
+      ArrowRight: 'right',
     }
-    if (!params[event.key] || animating) return
+    const direction = directions[event.key]
 
-    const { moved, emptyTiles } = moveTiles(grid, ...params[event.key])
-    if (!moved) return
+    if (!direction) return
 
-    animating = true
-    requestAnimationFrame((time: number): void => animateTiles(canvas, grid, time, performance.now()))
-    animating = false
+    state.update(direction)
+    if (!state.moved) return
 
-    addTile(grid, emptyTiles)
+    requestAnimationFrame((time: number): void => canvas.animate(time, performance.now()))
 
-    animating = true
-    requestAnimationFrame((time: number): void => animateTiles(canvas, grid, time, performance.now()))
-    animating = false
+    setTimeout(() => {
+      state.addTile()
+      canvas.draw()
+    }, canvas.animationDuration)
   }
 
-  $effect(() => draw(canvas, grid))
+  $effect(() => {
+    canvas = createCanvas(size, element, state.grid)
+    canvas.draw()
+  })
 </script>
 
 <svelte:window {onkeydown}/>
 
-<canvas bind:this={canvas} {width} height={width} class="mt-10 mx-auto bg-slate-50 border"></canvas>
+<canvas bind:this={element} {width} height={width} class="mt-10 mx-auto bg-slate-50 border"></canvas>
