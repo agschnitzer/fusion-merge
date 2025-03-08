@@ -36,7 +36,7 @@ export const createCanvas = (size: number, canvas: HTMLCanvasElement, grid: Grid
         const xCoordinate = tile.x + (x - tile.x) * t
         const yCoordinate = tile.y + (y - tile.y) * t
 
-        context.fillStyle = `hsl(${ 45 * tile.value }, 56%, 78%)`
+        context.fillStyle = `hsl(223, 50%, ${ 100 - 6 * tile.value }%)`
         context.fillRect(xCoordinate * tileSize, yCoordinate * tileSize, tileSize, tileSize)
 
         context.fillStyle = '#0f172b'
