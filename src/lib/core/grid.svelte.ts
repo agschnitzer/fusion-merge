@@ -10,10 +10,7 @@ import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/gr
  */
 export const createGrid = (size: number): GridState => {
   const state: Grid = Array.from({ length: size }, () => Array.from({ length: size }, () => null))
-  const emptyTiles: EmptyTiles = state
-      .flatMap((row, y) => row.map((_, x) => ({ [`${ y }${ x }`]: { x, y } })))
-      .reduce((object, tile) => ({ ...object, ...tile }), {})
-
+  const emptyTiles: EmptyTiles = {}
   let score = $state(0)
 
   /**
@@ -35,7 +32,47 @@ export const createGrid = (size: number): GridState => {
     const { x, y } = emptyTiles[key]
     state[y][x] = { value: Math.random() < 0.9 ? 2 : 4, x, y }
 
-    delete emptyTiles[`${ y }${ x }`]
+    delete emptyTiles[key]
+  }
+
+  /**
+   * Tracks the tile update by keeping the grid and empty tiles in sync.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {number} oldX The x coordinate of the empty tile.
+   * @param {number} oldY The y coordinate of the empty tile.
+   * @param {number} newX The x coordinate of the tile that was moved or merged.
+   * @param {number} newY The y coordinate of the tile that was moved or merged.
+   * @returns {Tile} The tile that was moved or merged.
+   */
+  const trackTileUpdate = (oldX: number, oldY: number, newX: number, newY: number): Tile => {
+    state[oldY][oldX] = null
+
+    emptyTiles[`${ oldY }${ oldX }`] = { x: oldX, y: oldY }
+    delete emptyTiles[`${ newY }${ newX }`]
+
+    return state[newY][newX]!
+  }
+
+  /**
+   * Maps coordinates based on the movement direction.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {boolean} isHorizontal `true` if the movement is horizontal, `false` otherwise.
+   * @param {number} fixedAxis The fixed coordinate (row for horizontal, column for vertical).
+   * @param {number} variableAxis The changing coordinate (column for horizontal, row for vertical).
+   * @returns {[number, number]} A tuple containing the new coordinates.
+   */
+  const mapPositionByDirection = (isHorizontal: boolean, fixedAxis: number, variableAxis: number): [number, number] =>
+      isHorizontal ? [fixedAxis, variableAxis] : [variableAxis, fixedAxis]
+
+  // Initialize empty tiles
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      emptyTiles[`${ y }${ x }`] = { x, y }
+    }
   }
 
   // Initialize the grid with two random tiles
@@ -70,78 +107,56 @@ export const createGrid = (size: number): GridState => {
     moveTiles: (direction: Direction): boolean => {
       let moved = false
 
-      const positions = {
-        startToEnd: {
-          start: 0,
-          end: state.length,
-          step: 1,
-        },
-        endToStart: {
-          start: state.length - 1,
-          end: 0,
-          step: -1,
-        },
-      }
-      const { start, end, step } = direction === 'down' || direction === 'right' ? positions.endToStart : positions.startToEnd
-      const horizontal = direction === 'left' || direction === 'right'
+      const isReverse = direction === 'down' || direction === 'right'
+      const isHorizontal = direction === 'left' || direction === 'right'
+
+      const start = isReverse ? state.length - 1 : 0
+      const end = isReverse ? 0 : state.length
+      const step = isReverse ? -1 : 1
 
       for (let i = 0; i < state.length; i++) {
-        let position = start
-        let lastMerged: Tile | null = null
+        let nextPosition = start
+        let lastMergedTile: Tile | null = null
 
-        for (let j = start; direction === 'down' || direction === 'right' ? j >= end : j < end; j += step) {
-          const y = horizontal ? i : j
-          const x = horizontal ? j : i
+        // Iterate over the row or column based on the direction of the move
+        for (let j = start; isReverse ? j >= end : j < end; j += step) {
+          const row = isHorizontal ? i : j
+          const col = isHorizontal ? j : i
 
-          const tile = state[y][x]
+          const tile = state[row][col]
+
+          // Skip empty tiles
           if (!tile) {
-            emptyTiles[`${ y }${ x }`] = { x, y }
+            emptyTiles[`${ row }${ col }`] = { x: col, y: row }
             continue
           }
 
-          tile.y = y
-          tile.x = x
+          // Save the tile position for animation
+          Object.assign(tile, { y: row, x: col })
 
-          const newY = horizontal ? i : position
-          const newX = horizontal ? position : i
+          const [newRow, newCol] = mapPositionByDirection(isHorizontal, i, nextPosition)
+          const [targetRow, targetCol] = mapPositionByDirection(isHorizontal, i, nextPosition - step)
 
-          // Move tile to new position
-          if (position !== j) {
-            state[y][x] = null
-            state[newY][newX] = tile
+          const targetTile = targetRow >= 0 && targetCol >= 0 && targetRow < state.length && targetCol < state.length ?
+              state[targetRow][targetCol] : null
 
-            emptyTiles[`${ y }${ x }`] = { x, y }
-            delete emptyTiles[`${ newY }${ newX }`]
-
+          // Move the tile to the new position
+          if (nextPosition !== j) {
+            state[newRow][newCol] = tile
+            trackTileUpdate(col, row, newCol, newRow)
             moved = true
           }
 
-          const targetY = horizontal ? i : position + step * (-1)
-          const targetX = horizontal ? position + step * (-1) : i
+          if (!!targetTile && lastMergedTile !== targetTile && tile.value === targetTile.value) {
+            targetTile.value *= 2
+            score += targetTile.value
 
-          if (targetY < 0 || targetX < 0 || targetY >= state.length || targetX >= state.length) {
-            position += step
-            continue
-          }
-
-          const targetTile = state[targetY][targetX]
-
-          // Merge only if target tile has not been merged before
-          if (targetTile && lastMerged !== targetTile && tile.value === targetTile.value) {
-            state[newY][newX] = null
-            state[targetY][targetX]!.value *= 2
-            score += state[targetY][targetX]!.value
-
-            emptyTiles[`${ newY }${ newX }`] = { x: newX, y: newY }
-            delete emptyTiles[`${ targetY }${ targetX }`]
-
-            lastMerged = state[targetY][targetX]
+            lastMergedTile = trackTileUpdate(newCol, newRow, targetCol, targetRow)
             moved = true
-
             continue
           }
 
-          position += step
+          nextPosition += step
         }
       }
 
