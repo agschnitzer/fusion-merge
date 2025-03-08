@@ -50,4 +50,7 @@
 
 <svelte:window {onkeydown}/>
 
-<canvas bind:this={element} {width} height={width} class="mt-10 mx-auto bg-slate-50 border"></canvas>
+<div class="w-fit mx-auto">
+  <canvas bind:this={element} {width} height={width} class="mt-10 mb-4 bg-slate-50 border-2"></canvas>
+  <p class="font-bold text-3xl text-center">{state.score}</p>
+</div>
