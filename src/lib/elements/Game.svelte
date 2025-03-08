@@ -59,10 +59,10 @@
 
 <svelte:window {onkeydown}/>
 
-<div class="w-fit mx-auto">
-  <canvas bind:this={element} {width} height={width} class="mt-10 mb-4 bg-slate-50 border-2"></canvas>
-  <div class="flex justify-between items-start gap-4">
-    <p class="font-semibold text-2xl text-center">Score: {state.score}</p>
+<div class="w-fit mx-auto py-10">
+  <canvas bind:this={element} {width} height={width} class="mb-4 bg-slate-100 shadow-sm border border-slate-700 rounded-md"></canvas>
+  <div class="flex justify-between items-stretch gap-4">
+    <p class="px-3 flex items-center font-semibold text-2xl text-center text-slate-700 bg-slate-100 rounded-md">Score: {state.score}</p>
     <button onclick={reset} class="px-3 py-2 font-medium bg-slate-800 text-slate-50 rounded-md">New Game</button>
   </div>
 </div>
