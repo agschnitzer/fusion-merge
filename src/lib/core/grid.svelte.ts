@@ -28,11 +28,7 @@ export const createGrid = (size: number): GridState => {
       if (Math.random() < 1 / ++count) key = tile
     }
 
-    // No empty tiles available
-    if (!key) {
-      gameOver = true
-      return
-    }
+    if (!key) return
 
     const { x, y } = emptyTiles[key]
     state[y][x] = { value: Math.random() < 0.9 ? 1 : 2, x, y }
@@ -72,6 +68,27 @@ export const createGrid = (size: number): GridState => {
    */
   const mapPositionByDirection = (isHorizontal: boolean, fixedAxis: number, variableAxis: number): [number, number] =>
       isHorizontal ? [fixedAxis, variableAxis] : [variableAxis, fixedAxis]
+
+  /**
+   * Checks if any tiles can be merged.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @returns {boolean} `true` if any tiles can be merged, `false` otherwise.
+   */
+  const hasPossibleMerges = (): boolean => {
+    for (let y = 0; y < state.length; y++) {
+      for (let x = 0; x < state.length; x++) {
+        // Check if any neighbouring tiles can be merged
+        if ((x < state.length - 1 && state[y][x] && state[y][x + 1] && state[y][x]?.value === state[y][x + 1]?.value) ||
+            (y < state.length - 1 && state[y][x] && state[y + 1][x] && state[y][x]?.value === state[y + 1][x]?.value)) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
 
   /**
    * Resets the grid to its initial state.
@@ -184,6 +201,8 @@ export const createGrid = (size: number): GridState => {
           nextPosition += step
         }
       }
+
+      if (!Object.keys(emptyTiles).length) gameOver = !hasPossibleMerges()
 
       return moved
     },
