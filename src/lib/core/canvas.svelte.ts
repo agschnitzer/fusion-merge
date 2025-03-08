@@ -25,6 +25,15 @@ export const createCanvas = (size: number, canvas: HTMLCanvasElement, grid: Grid
 
         context.fillStyle = `hsl(${ 45 * tile.value }, 56%, 78%)`
         context.fillRect((tile.x + (x - tile.x) * t) * tileSize, (tile.y + (y - tile.y) * t) * tileSize, tileSize, tileSize)
+
+        context.fillStyle = '#000'
+        context.font = 'bold 2.5em sans-serif'
+        context.textAlign = 'center'
+        context.textBaseline = 'middle'
+        context.fillText(tile.value.toString(), (tile.x + (x - tile.x) * t + 0.5) * tileSize, (tile.y + (y - tile.y) * t + 0.5) * tileSize)
+        context.strokeStyle = '#000'
+        context.lineWidth = 0.02 * tileSize
+        context.strokeRect((tile.x + (x - tile.x) * t) * tileSize, (tile.y + (y - tile.y) * t) * tileSize, tileSize, tileSize)
       }
     }
   }

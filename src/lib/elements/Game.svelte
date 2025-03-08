@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createCanvas } from '$lib/core/animation.svelte'
+  import { createCanvas } from '$lib/core/canvas.svelte.js'
   import { createGrid } from '$lib/core/grid.svelte'
   import type { CanvasState } from '$lib/types/canvas.type'
   import type { Direction } from '$lib/types/grid.type'
