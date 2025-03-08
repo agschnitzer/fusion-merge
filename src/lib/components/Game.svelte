@@ -1,4 +1,7 @@
+<!-- @component Component that renders all the game components -->
 <script lang="ts">
+  import Controls from '$lib/components/Controls.svelte'
+  import Score from '$lib/components/Score.svelte'
   import { createCanvas } from '$lib/core/canvas.svelte.js'
   import { createGrid } from '$lib/core/grid.svelte'
   import type { CanvasState } from '$lib/types/canvas.type'
@@ -19,7 +22,7 @@
    *
    * @param {KeyboardEvent} event The keydown event.
    */
-  const onkeydown = (event: KeyboardEvent): void => {
+  const handleKeyPress = (event: KeyboardEvent): void => {
     if (state.gameOver || canvas.animating) return
 
     const directions: Record<string, Direction> = {
@@ -57,13 +60,13 @@
   })
 </script>
 
-<svelte:window {onkeydown}/>
+<svelte:window onkeydown={handleKeyPress}/>
 
 <div class="w-fit mx-auto py-10">
   <canvas bind:this={element} {width} height={width} class="mb-4 bg-slate-100 shadow-sm border border-slate-700 rounded-md"></canvas>
   <div class="flex justify-between items-stretch gap-4">
-    <p class="px-3 flex items-center font-semibold text-2xl text-center text-slate-700 bg-slate-100 rounded-md">Score: {state.score}</p>
-    <button onclick={reset} class="px-3 py-2 font-medium bg-slate-700 text-slate-50 rounded-md">New Game</button>
+    <Score score={state.score}/>
+    <Controls {reset}/>
   </div>
   {#if state.gameOver}
     <p class="py-2 font-medium text-lg text-center">Game Over</p>
