@@ -20,7 +20,7 @@
    * @param {KeyboardEvent} event The keydown event.
    */
   const onkeydown = (event: KeyboardEvent): void => {
-    if (canvas.animating) return
+    if (state.gameOver || canvas.animating) return
 
     const directions: Record<string, Direction> = {
       ArrowUp: 'up',
@@ -41,6 +41,16 @@
     }, canvas.animationDuration)
   }
 
+  /**
+   * Resets the game state and redraws the canvas.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const reset = (): void => {
+    state.reset()
+    canvas.draw()
+  }
+
   $effect(() => {
     canvas = createCanvas(size, element, state.grid)
     canvas.draw()
@@ -51,5 +61,8 @@
 
 <div class="w-fit mx-auto">
   <canvas bind:this={element} {width} height={width} class="mt-10 mb-4 bg-slate-50 border-2"></canvas>
-  <p class="font-bold text-3xl text-center">{state.score}</p>
+  <div class="flex justify-between items-start gap-4">
+    <p class="font-semibold text-2xl text-center">Score: {state.score}</p>
+    <button onclick={reset} class="px-3 py-2 font-medium bg-slate-800 text-slate-50 rounded-md">New Game</button>
+  </div>
 </div>

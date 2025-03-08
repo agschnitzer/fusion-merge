@@ -9,9 +9,11 @@ import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/gr
  * @returns {GridState} An object representing the grid state.
  */
 export const createGrid = (size: number): GridState => {
-  const state: Grid = Array.from({ length: size }, () => Array.from({ length: size }, () => null))
+  const state: Grid = Array.from({ length: size }, () => Array(size).fill(null))
   const emptyTiles: EmptyTiles = {}
+
   let score = $state(0)
+  let gameOver = $state(false)
 
   /**
    * Adds a tile on the grid at a random position.
@@ -26,8 +28,11 @@ export const createGrid = (size: number): GridState => {
       if (Math.random() < 1 / ++count) key = tile
     }
 
-    // Game over
-    if (!key) return
+    // No empty tiles available
+    if (!key) {
+      gameOver = true
+      return
+    }
 
     const { x, y } = emptyTiles[key]
     state[y][x] = { value: Math.random() < 0.9 ? 1 : 2, x, y }
@@ -68,16 +73,28 @@ export const createGrid = (size: number): GridState => {
   const mapPositionByDirection = (isHorizontal: boolean, fixedAxis: number, variableAxis: number): [number, number] =>
       isHorizontal ? [fixedAxis, variableAxis] : [variableAxis, fixedAxis]
 
-  // Initialize empty tiles
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      emptyTiles[`${ y }${ x }`] = { x, y }
+  /**
+   * Resets the grid to its initial state.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const reset = (): void => {
+    gameOver = false
+    score = 0
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        state[y][x] = null
+        emptyTiles[`${ y }${ x }`] = { x, y }
+      }
     }
+
+    // Add two random tiles to start the game
+    addRandomTile()
+    addRandomTile()
   }
 
-  // Initialize the grid with two random tiles
-  addRandomTile()
-  addRandomTile()
+  reset()
 
   return {
     /**
@@ -96,6 +113,14 @@ export const createGrid = (size: number): GridState => {
      * @returns {number} The current score.
      */
     get score(): number { return score },
+    /**
+     * Returns the game over state.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @returns {boolean} `true` if the game is over, `false` otherwise.
+     */
+    get gameOver(): boolean { return gameOver },
     /**
      * Moves the tiles in the specified direction.
      * @since 1.0.0
@@ -163,5 +188,6 @@ export const createGrid = (size: number): GridState => {
       return moved
     },
     addRandomTile,
+    reset,
   }
 }
