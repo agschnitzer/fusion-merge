@@ -1,47 +1,47 @@
-import type { Grid, GridState, Tile } from '$lib/types/grid.type'
+import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/grid.type'
 
+/**
+ * Creates a new grid with the specified size.
+ * @since 1.0.0
+ * @version 1.0.0
+ *
+ * @param {number} size The size of the grid.
+ * @returns {GridState} An object representing the grid state.
+ */
 export const createGrid = (size: number): GridState => {
   const state: Grid = Array.from({ length: size }, () => Array.from({ length: size }, () => null))
-  const positions = {
-    up: {
-      start: 0,
-      end: state.length,
-      step: 1,
-    },
-    down: {
-      start: state.length - 1,
-      end: 0,
-      step: -1,
-    },
-    left: {
-      start: 0,
-      end: state.length,
-      step: 1,
-    },
-    right: {
-      start: state.length - 1,
-      end: 0,
-      step: -1,
-    },
-  }
+  const emptyTiles: EmptyTiles = state
+      .flatMap((row, y) => row.map((_, x) => ({ [`${ y }${ x }`]: { x, y } })))
+      .reduce((object, tile) => ({ ...object, ...tile }), {})
 
-  let emptyTiles: Record<string, Omit<Tile, 'value'>> = {}
   let score = $state(0)
-  let moved = false
 
-  // Initialize grid with two random tiles
-  for (let i = 0; i < 2; i++) {
-    const x = Math.floor(Math.random() * size)
-    const y = Math.floor(Math.random() * size)
+  /**
+   * Adds a tile on the grid at a random position.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const addRandomTile = (): void => {
+    let key: string | null = null
+    let count = 0
 
-    if (state[y][x]) {
-      i--
-      continue
+    for (const tile in emptyTiles) {
+      if (Math.random() < 1 / ++count) key = tile
     }
 
+    // Game over
+    if (!key) return
+
+    const { x, y } = emptyTiles[key]
     state[y][x] = { value: Math.random() < 0.9 ? 2 : 4, x, y }
     score += state[y][x].value
+
+    delete emptyTiles[`${ y }${ x }`]
   }
+
+  // Initialize the grid with two random tiles
+  addRandomTile()
+  addRandomTile()
 
   return {
     /**
@@ -49,25 +49,9 @@ export const createGrid = (size: number): GridState => {
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @returns {Grid} The grid state.
+     * @returns {Grid} A two-dimensional array representing the grid.
      */
     get grid(): Grid { return state },
-    /**
-     * Returns the empty tiles.
-     * @since 1.0.0
-     * @version 1.0.0
-     *
-     * @returns {Record<string, Omit<Tile, 'value'>>} The empty tiles.
-     */
-    get emptyTiles(): Record<string, Omit<Tile, 'value'>> { return emptyTiles },
-    /**
-     * Returns whether a tile has moved since the last move.
-     * @since 1.0.0
-     * @version 1.0.0
-     *
-     * @returns {boolean} `true` if a tile has moved, `false` otherwise.
-     */
-    get moved(): boolean { return moved },
     /**
      * Returns the current score.
      * @since 1.0.0
@@ -77,19 +61,31 @@ export const createGrid = (size: number): GridState => {
      */
     get score(): number { return score },
     /**
-     * Updates the grid by moving tiles.
+     * Moves the tiles in the specified direction.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @param {'up' | 'down' | 'left' | 'right'} direction The direction to move the tiles.
+     * @param {Direction} direction The direction to move the tiles.
+     * @returns {boolean} `true` if any tiles were moved, `false` otherwise.
      */
-    update: (direction: 'up' | 'down' | 'left' | 'right'): void => {
-      moved = false
+    moveTiles: (direction: Direction): boolean => {
+      let moved = false
 
-      const { start, end, step } = positions[direction]
+      const positions = {
+        startToEnd: {
+          start: 0,
+          end: state.length,
+          step: 1,
+        },
+        endToStart: {
+          start: state.length - 1,
+          end: 0,
+          step: -1,
+        },
+      }
+      const { start, end, step } = direction === 'down' || direction === 'right' ? positions.endToStart : positions.startToEnd
       const horizontal = direction === 'left' || direction === 'right'
 
-      emptyTiles = {}
       for (let i = 0; i < state.length; i++) {
         let position = start
         let lastMerged: Tile | null = null
@@ -148,18 +144,9 @@ export const createGrid = (size: number): GridState => {
           position += step
         }
       }
+
+      return moved
     },
-    /**
-     * Adds a new tile to the grid.
-     * @since 1.0.0
-     * @version 1.0.0
-     */
-    addTile: (): void => {
-      const emptyTilesArray = Object.values(emptyTiles)
-      const { y, x } = emptyTilesArray[Math.floor(Math.random() * emptyTilesArray.length)]!
-      state[y][x] = { value: Math.random() < 0.9 ? 2 : 4, y, x }
-      score += state[y][x].value
-      delete emptyTiles[`${ y }${ x }`]
-    },
+    addRandomTile,
   }
 }
