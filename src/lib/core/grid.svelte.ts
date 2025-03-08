@@ -30,7 +30,7 @@ export const createGrid = (size: number): GridState => {
     if (!key) return
 
     const { x, y } = emptyTiles[key]
-    state[y][x] = { value: Math.random() < 0.9 ? 2 : 4, x, y }
+    state[y][x] = { value: Math.random() < 0.9 ? 1 : 2, x, y }
 
     delete emptyTiles[key]
   }
@@ -148,8 +148,8 @@ export const createGrid = (size: number): GridState => {
           }
 
           if (!!targetTile && lastMergedTile !== targetTile && tile.value === targetTile.value) {
-            targetTile.value *= 2
-            score += targetTile.value
+            targetTile.value += 1
+            score += targetTile.value * targetTile.value
 
             lastMergedTile = trackTileUpdate(newCol, newRow, targetCol, targetRow)
             moved = true
