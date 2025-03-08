@@ -26,6 +26,7 @@ export const createGrid = (size: number): GridState => {
   }
 
   let emptyTiles: Record<string, Omit<Tile, 'value'>> = {}
+  let score = $state(0)
   let moved = false
 
   // Initialize grid with two random tiles
@@ -39,6 +40,7 @@ export const createGrid = (size: number): GridState => {
     }
 
     state[y][x] = { value: Math.random() < 0.9 ? 2 : 4, x, y }
+    score += state[y][x].value
   }
 
   return {
@@ -66,6 +68,14 @@ export const createGrid = (size: number): GridState => {
      * @returns {boolean} `true` if a tile has moved, `false` otherwise.
      */
     get moved(): boolean { return moved },
+    /**
+     * Returns the current score.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @returns {number} The current score.
+     */
+    get score(): number { return score },
     /**
      * Updates the grid by moving tiles.
      * @since 1.0.0
@@ -148,6 +158,7 @@ export const createGrid = (size: number): GridState => {
       const emptyTilesArray = Object.values(emptyTiles)
       const { y, x } = emptyTilesArray[Math.floor(Math.random() * emptyTilesArray.length)]!
       state[y][x] = { value: Math.random() < 0.9 ? 2 : 4, y, x }
+      score += state[y][x].value
       delete emptyTiles[`${ y }${ x }`]
     },
   }

@@ -7,6 +7,7 @@
  * @property {Grid} grid The grid.
  * @property {Record<string, Omit<Tile, 'value'>>} emptyTiles The empty tiles.
  * @property {boolean} moved Whether any tiles have moves since the last update.
+ * @property {number} score The current score.
  * @property {(direction: 'up' | 'down' | 'left' | 'right') => void} update Updates the grid.
  * @property {() => void} addTile Adds a new tile to the grid.
  */
@@ -14,6 +15,7 @@ export interface GridState {
   grid: Grid
   emptyTiles: Record<string, Omit<Tile, 'value'>>
   moved: boolean
+  score: number
   update: (direction: 'up' | 'down' | 'left' | 'right') => void
   addTile: () => void
 }
