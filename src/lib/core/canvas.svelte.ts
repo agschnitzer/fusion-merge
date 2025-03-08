@@ -1,6 +1,16 @@
 import type { CanvasState } from '$lib/types/canvas.type'
 import type { Grid } from '$lib/types/grid.type'
 
+/**
+ * Creates a canvas state for the game.
+ * @since 1.0.0
+ * @version 1.0.0
+ *
+ * @param {number} size The size of the grid.
+ * @param {HTMLCanvasElement} canvas The canvas element to draw on.
+ * @param {Grid} grid The grid of tiles.
+ * @returns {CanvasState} A canvas state object.
+ */
 export const createCanvas = (size: number, canvas: HTMLCanvasElement, grid: Grid): CanvasState => {
   let animating = false
   const animationDuration = 125
@@ -23,17 +33,17 @@ export const createCanvas = (size: number, canvas: HTMLCanvasElement, grid: Grid
         const tile = grid[y][x]
         if (!tile) continue
 
-        context.fillStyle = `hsl(${ 45 * tile.value }, 56%, 78%)`
-        context.fillRect((tile.x + (x - tile.x) * t) * tileSize, (tile.y + (y - tile.y) * t) * tileSize, tileSize, tileSize)
+        const xCoordinate = tile.x + (x - tile.x) * t
+        const yCoordinate = tile.y + (y - tile.y) * t
 
-        context.fillStyle = '#000'
-        context.font = 'bold 2.5em sans-serif'
+        context.fillStyle = `hsl(${ 45 * tile.value }, 56%, 78%)`
+        context.fillRect(xCoordinate * tileSize, yCoordinate * tileSize, tileSize, tileSize)
+
+        context.fillStyle = '#0f172b'
+        context.font = 'bold 2em sans-serif'
         context.textAlign = 'center'
         context.textBaseline = 'middle'
-        context.fillText(tile.value.toString(), (tile.x + (x - tile.x) * t + 0.5) * tileSize, (tile.y + (y - tile.y) * t + 0.5) * tileSize)
-        context.strokeStyle = '#000'
-        context.lineWidth = 0.02 * tileSize
-        context.strokeRect((tile.x + (x - tile.x) * t) * tileSize, (tile.y + (y - tile.y) * t) * tileSize, tileSize, tileSize)
+        context.fillText(tile.value.toString(), (xCoordinate + 0.5) * tileSize, (yCoordinate + 0.5) * tileSize)
       }
     }
   }
@@ -78,14 +88,6 @@ export const createCanvas = (size: number, canvas: HTMLCanvasElement, grid: Grid
      * @returns {number} The duration of the animation.
      */
     get animationDuration(): number { return animationDuration },
-    /**
-     * Returns the canvas element.
-     * @since 1.0.0
-     * @version 1.0.0
-     *
-     * @returns {HTMLCanvasElement} The canvas element.
-     */
-    get element(): HTMLCanvasElement { return canvas },
     draw,
     animate,
   }
