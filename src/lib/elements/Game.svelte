@@ -63,6 +63,9 @@
   <canvas bind:this={element} {width} height={width} class="mb-4 bg-slate-100 shadow-sm border border-slate-700 rounded-md"></canvas>
   <div class="flex justify-between items-stretch gap-4">
     <p class="px-3 flex items-center font-semibold text-2xl text-center text-slate-700 bg-slate-100 rounded-md">Score: {state.score}</p>
-    <button onclick={reset} class="px-3 py-2 font-medium bg-slate-800 text-slate-50 rounded-md">New Game</button>
+    <button onclick={reset} class="px-3 py-2 font-medium bg-slate-700 text-slate-50 rounded-md">New Game</button>
   </div>
+  {#if state.gameOver}
+    <p class="py-2 font-medium text-lg text-center">Game Over</p>
+  {/if}
 </div>
