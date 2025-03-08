@@ -9,9 +9,8 @@ import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/gr
  * @returns {GridState} An object representing the grid state.
  */
 export const createGrid = (size: number): GridState => {
-  const state: Grid = Array.from({ length: size }, () => Array(size).fill(null))
-  const emptyTiles: EmptyTiles = {}
-
+  let state: Grid = Array.from({ length: size }, () => Array(size).fill(null))
+  let emptyTiles: EmptyTiles = {}
   let score = $state(0)
   let gameOver = $state(false)
 
@@ -123,6 +122,14 @@ export const createGrid = (size: number): GridState => {
      */
     get grid(): Grid { return state },
     /**
+     * Sets the grid to a new state.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @param {Grid} grid The new grid state.
+     */
+    set grid(grid: Grid) {state = grid },
+    /**
      * Returns the current score.
      * @since 1.0.0
      * @version 1.0.0
@@ -156,6 +163,7 @@ export const createGrid = (size: number): GridState => {
       const end = isReverse ? 0 : state.length
       const step = isReverse ? -1 : 1
 
+      emptyTiles = {}
       for (let i = 0; i < state.length; i++) {
         let nextPosition = start
         let lastMergedTile: Tile | null = null
