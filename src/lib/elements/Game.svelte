@@ -2,6 +2,7 @@
   import { createCanvas } from '$lib/core/animation.svelte'
   import { createGrid } from '$lib/core/grid.svelte'
   import type { CanvasState } from '$lib/types/canvas.type'
+  import type { Direction } from '$lib/types/grid.type'
 
   let { width = 400, size = 4 } = $props()
 
@@ -21,7 +22,7 @@
   const onkeydown = (event: KeyboardEvent): void => {
     if (canvas.animating) return
 
-    const directions: Record<string, 'up' | 'down' | 'left' | 'right'> = {
+    const directions: Record<string, Direction> = {
       ArrowUp: 'up',
       ArrowDown: 'down',
       ArrowLeft: 'left',
@@ -29,15 +30,13 @@
     }
     const direction = directions[event.key]
 
-    if (!direction) return
-
-    state.update(direction)
-    if (!state.moved) return
+    // Return if the pressed key is not a valid direction or no tiles can be moved in that direction
+    if (!direction || !state.moveTiles(direction)) return
 
     requestAnimationFrame((time: number): void => canvas.animate(time, performance.now()))
 
     setTimeout(() => {
-      state.addTile()
+      state.addRandomTile()
       canvas.draw()
     }, canvas.animationDuration)
   }
