@@ -1,94 +1,192 @@
-import type { CanvasState } from '$lib/types/canvas.type'
-import type { Grid } from '$lib/types/grid.type'
+import type { CanvasOptions, CanvasState } from '$lib/types/canvas.type'
+import type { Grid, Tile } from '$lib/types/grid.type'
 
 /**
  * Creates a canvas state for the game.
  * @since 1.0.0
  * @version 1.0.0
  *
- * @param {number} size The size of the grid.
  * @param {HTMLCanvasElement} canvas The canvas element to draw on.
  * @param {Grid} grid The grid of tiles.
  * @returns {CanvasState} A canvas state object.
  */
-export const createCanvas = (size: number, canvas: HTMLCanvasElement, grid: Grid): CanvasState => {
+export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState => {
+  const options: CanvasOptions = {
+    gap: 10,
+    borderRadius: 8,
+    animationDuration: 125,
+    backgroundColor: '#1d293d',
+    emptyTileColor: 'hsl(223, 5%, 100%, 0.1)',
+    textColor: '#1d293d',
+  }
+
+  const size = grid.length
+  const tileSize = (canvas.width - options.gap * (size + 1)) / size
+
   let animating = false
-  const animationDuration = 125
+  let animationId: number
+
+  const context = canvas.getContext('2d')!
+  const background = canvas.cloneNode() as HTMLCanvasElement
+  const backgroundContext = background.getContext('2d')!
+
+  /**
+   * Draws a single tile on the canvas.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {number} x The x-coordinate of the tile.
+   * @param {number} y The y-coordinate of the tile.
+   * @param {CanvasRenderingContext2D} [ctx = context] The canvas context to draw on.
+   */
+  const drawTile = (x: number, y: number, ctx: CanvasRenderingContext2D = context): void => {
+    ctx.beginPath()
+    ctx.roundRect(
+        options.gap + x * (tileSize + options.gap),
+        options.gap + y * (tileSize + options.gap),
+        tileSize,
+        tileSize,
+        options.borderRadius,
+    )
+    ctx.fill()
+  }
+
+  /**
+   * Draws a game tile on the canvas.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {number} x The x-coordinate of the tile.
+   * @param {number} y The y-coordinate of the tile.
+   * @param {number} value The value of the tile.
+   */
+  const drawGameTile = (x: number, y: number, value: number): void => {
+    context.fillStyle = `hsl(223, 50%, ${ Math.max(30, 100 - 7 * value) }%)`
+    drawTile(x, y)
+
+    context.fillStyle = options.textColor
+    context.font = `bold 32px sans-serif`
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+
+    context.fillText(
+        value.toString(),
+        options.gap + x * (tileSize + options.gap) + tileSize / 2,
+        options.gap + y * (tileSize + options.gap) + tileSize / 2,
+    )
+  }
 
   /**
    * Draws the grid on the canvas.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {number} t The animation progress.
+   * @param {number} t The animation progress, from 0 to 1.
    */
   const draw = (t: number = 1): void => {
-    const tileSize = canvas.width / size
+    clear()
 
-    const context = canvas.getContext('2d')!
-    context.clearRect(0, 0, canvas.width, canvas.height)
-
-    for (let y = 0; y < grid.length; y++) {
-      for (let x = 0; x < grid.length; x++) {
-        const tile = grid[y][x]
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        const tile = grid[i][j]
         if (!tile) continue
 
-        const xCoordinate = tile.x + (x - tile.x) * t
-        const yCoordinate = tile.y + (y - tile.y) * t
-
-        context.fillStyle = `hsl(223, 50%, ${ 100 - 6 * tile.value }%)`
-        context.fillRect(xCoordinate * tileSize, yCoordinate * tileSize, tileSize, tileSize)
-
-        context.fillStyle = '#0f172b'
-        context.font = 'bold 2em sans-serif'
-        context.textAlign = 'center'
-        context.textBaseline = 'middle'
-        context.fillText(tile.value.toString(), (xCoordinate + 0.5) * tileSize, (yCoordinate + 0.5) * tileSize)
+        const { x, y, value } = tile
+        drawGameTile(x + (j - x) * t, y + (i - y) * t, value)
       }
     }
   }
 
   /**
-   * Animates the tiles on the canvas.
+   * Animates the canvas.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {number} time The current time.
-   * @param {number} startTime The start time.
+   * @param {Function} callback The function to call on each animation frame.
+   * @returns {Promise<void>} A promise that resolves when the animation is complete.
    */
-  const animate = (time: number, startTime: number): void => {
+  const animate = (callback: (t: number) => void): Promise<void> => {
     animating = true
+    const startTime = performance.now()
 
-    const t = Math.min((time - startTime) / 125, 1)
+    return new Promise(resolve => {
+      const animationLoop = (time: number): void => {
+        const t = Math.min((time - startTime) / options.animationDuration, 1)
+        callback(t)
 
-    draw(t)
+        if (t === 1) {
+          // Animation is complete
+          cancelAnimationFrame(animationId)
+          animating = false
+          return resolve()
+        }
 
-    if (t === 1) {
-      animating = false
-      return
-    }
+        // Continue the animation if not complete
+        animationId = requestAnimationFrame(animationLoop)
+      }
 
-    requestAnimationFrame((time: number): void => animate(time, startTime))
+      // Start the animation
+      animationId = requestAnimationFrame(animationLoop)
+    })
   }
+
+  /**
+   * Clears the canvas and draws the background.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const clear = (): void => {
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(background, 0, 0)
+  }
+
+  backgroundContext.fillStyle = options.backgroundColor
+  backgroundContext.fillRect(0, 0, canvas.width, canvas.height)
+
+  backgroundContext.fillStyle = options.emptyTileColor
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      drawTile(x, y, backgroundContext)
+    }
+  }
+
+  draw()
 
   return {
     /**
-     * Returns the animation state.
+     * Indicates if the canvas is animating.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @returns {boolean} The animation state.
+     * @returns {boolean} `true` if the canvas is animating, `false` otherwise.
      */
     get animating(): boolean { return animating },
     /**
-     * Returns the duration of the animation.
+     * Animates the tiles on the canvas to their new positions.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @returns {number} The duration of the animation.
+     * @returns {Promise<void>} A promise that resolves when the animation is complete.
      */
-    get animationDuration(): number { return animationDuration },
-    draw,
-    animate,
+    animateMove: (): Promise<void> => animate(draw),
+    /**
+     * Animates a single tile on the canvas.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @param {Tile} tile The tile to animate.
+     */
+    animateTile: ({ x, y, value }: Tile): void => drawGameTile(x, y, value),
+    /**
+     * Resets the canvas with the given tiles.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @param {Tile[]} tiles The tiles to draw on the canvas.
+     */
+    reset: (tiles: Tile[]): void => {
+      clear()
+      tiles.forEach(({ x, y, value }) => drawGameTile(x, y, value))
+    },
   }
 }
