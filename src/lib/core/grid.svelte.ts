@@ -18,8 +18,10 @@ export const createGrid = (size: number): GridState => {
    * Adds a tile on the grid at a random position.
    * @since 1.0.0
    * @version 1.0.0
+   *
+   * @returns {Tile} The tile that was added.
    */
-  const addRandomTile = (): void => {
+  const addRandomTile = (): Tile => {
     let key: string | null = null
     let count = 0
 
@@ -27,12 +29,12 @@ export const createGrid = (size: number): GridState => {
       if (Math.random() < 1 / ++count) key = tile
     }
 
-    if (!key) return
-
-    const { x, y } = emptyTiles[key]
+    const { x, y } = emptyTiles[key!]
     state[y][x] = { value: Math.random() < 0.9 ? 1 : 2, x, y }
 
-    delete emptyTiles[key]
+    delete emptyTiles[key!]
+
+    return state[y][x]
   }
 
   /**
@@ -94,7 +96,7 @@ export const createGrid = (size: number): GridState => {
    * @since 1.0.0
    * @version 1.0.0
    */
-  const reset = (): void => {
+  const reset = (): Tile[] => {
     gameOver = false
     score = 0
 
@@ -106,8 +108,10 @@ export const createGrid = (size: number): GridState => {
     }
 
     // Add two random tiles to start the game
-    addRandomTile()
-    addRandomTile()
+    const tile1 = addRandomTile()
+    const tile2 = addRandomTile()
+
+    return [tile1, tile2]
   }
 
   reset()

@@ -8,16 +8,16 @@
  * @property {number} score The current score.
  * @property {boolean} gameOver Indicates if the game is over.
  * @property {(direction: Direction) => boolean} moveTiles Moves the tiles in the specified direction.
- * @property {() => void} addRandomTile Adds a tile on the grid at a random position.
- * @property {() => void} reset Resets the grid to its initial state.
+ * @property {() => Tile} addRandomTile Adds a tile on the grid at a random position.
+ * @property {() => Tile[]} reset Resets the grid to its initial state.
  */
 export interface GridState {
   grid: Grid
   score: number
   gameOver: boolean
   moveTiles: (direction: Direction) => boolean
-  addRandomTile: () => void
-  reset: () => void
+  addRandomTile: () => Tile
+  reset: () => Tile[]
 }
 
 /**
