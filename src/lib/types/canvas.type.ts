@@ -1,3 +1,5 @@
+import type { Tile } from '$lib/types/grid.type'
+
 /**
  * Represents the state of the canvas.
  * @since 1.0.0
@@ -5,13 +7,35 @@
  *
  * @interface CanvasState
  * @property {boolean} animating Indicates if the canvas is animating.
- * @property {number} animationDuration The duration of the animation.
- * @property {(t?: number) => void} draw Draws the tiles on the canvas.
- * @property {(time: number, startTime: number) => void} animate Animates the tiles on the canvas.
+ * @property {() => Promise<void>} animateMove Animates the tiles on the canvas to their new positions.
+ * @property {(tile: Tile) => void} animateTile Animates a single tile on the canvas.
+ * @property {(tiles: Tile[]) => void} reset Resets the canvas with the given tiles.
  */
 export interface CanvasState {
   animating: boolean
+  animateMove: () => Promise<void>
+  animateTile: (tile: Tile) => void
+  reset: (tiles: Tile[]) => void
+}
+
+/**
+ * Represents the options for the canvas.
+ * @since 1.0.0
+ * @version 1.0.0
+ *
+ * @interface CanvasOptions
+ * @property {number} gap The gap between tiles.
+ * @property {number} borderRadius The border radius of the tiles.
+ * @property {number} animationDuration The duration of the animation in milliseconds.
+ * @property {string} backgroundColor The background colour of the canvas.
+ * @property {string} emptyTileColor The background colour of empty tiles.
+ * @property {string} textColor The text colour of the tiles.
+ */
+export interface CanvasOptions {
+  gap: number
+  borderRadius: number
   animationDuration: number
-  draw: (t?: number) => void
-  animate: (time: number, startTime: number) => void
+  backgroundColor: string
+  emptyTileColor: string
+  textColor: string
 }

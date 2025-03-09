@@ -22,7 +22,7 @@
    *
    * @param {KeyboardEvent} event The keydown event.
    */
-  const handleKeyPress = (event: KeyboardEvent): void => {
+  const handleKeyPress = async (event: KeyboardEvent): Promise<void> => {
     if (state.gameOver || canvas.animating) return
 
     const directions: Record<string, Direction> = {
@@ -36,12 +36,10 @@
     // Return if the pressed key is not a valid direction or no tiles can be moved in that direction
     if (!direction || !state.moveTiles(direction)) return
 
-    requestAnimationFrame((time: number): void => canvas.animate(time, performance.now()))
+    await canvas.animateMove()
 
-    setTimeout(() => {
-      state.addRandomTile()
-      canvas.draw()
-    }, canvas.animationDuration)
+    const tile = state.addRandomTile()
+    canvas.animateTile(tile)
   }
 
   /**
@@ -50,20 +48,19 @@
    * @version 1.0.0
    */
   const reset = (): void => {
-    state.reset()
-    canvas.draw()
+    const tiles = state.reset()
+    canvas.reset(tiles)
   }
 
   $effect(() => {
-    canvas = createCanvas(size, element, state.grid)
-    canvas.draw()
+    canvas = createCanvas(element, state.grid)
   })
 </script>
 
 <svelte:window onkeydown={handleKeyPress}/>
 
 <div class="w-fit mx-auto py-10">
-  <canvas bind:this={element} {width} height={width} class="mb-4 bg-slate-100 shadow-sm border border-slate-700 rounded-md"></canvas>
+  <canvas bind:this={element} {width} height={width} class="mb-4 shadow border border-slate-700 rounded-lg"></canvas>
   <div class="flex justify-between items-stretch gap-4">
     <Score score={state.score}/>
     <Controls {reset}/>
