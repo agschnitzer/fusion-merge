@@ -200,13 +200,13 @@ export const createGrid = (size: number): GridState => {
             moved = true
           }
 
-          if (!!targetTile && targetTile.merged === false && tile.value === targetTile.value) {
+          if (!!targetTile && !targetTile.merged && tile.value === targetTile.value) {
             targetTile.value += 1
             score += targetTile.value * targetTile.value
 
             trackTileUpdate(newCol, newRow, targetCol, targetRow)
             state[targetRow][targetCol]!.merged = true
-            
+
             moved = true
             continue
           }
