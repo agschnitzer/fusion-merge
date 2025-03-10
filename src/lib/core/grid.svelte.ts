@@ -125,13 +125,12 @@ export const createGrid = (size: number): GridState => {
   const init = (loadState: boolean = true): Tile[] => {
     if (loadState) {
       const savedScore = loadScore(SCORE_KEY)
-      const savedState = loadGameState(STATE_KEY)
+      const savedState = savedScore ? loadGameState(STATE_KEY) : null
       bestScore = loadScore(BEST_SCORE_KEY)
-
-      if (savedScore && savedState) {
+      
+      if (savedState) {
         score = savedScore
         state = savedState
-
         return savedState.flat().filter(Boolean) as Tile[]
       }
     }
