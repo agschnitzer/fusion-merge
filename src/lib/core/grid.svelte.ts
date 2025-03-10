@@ -1,4 +1,4 @@
-import { encode, loadGameState, loadScore, saveGameState, saveScore } from '$lib/core/storage'
+import { encode, loadGameState, saveGameState } from '$lib/core/storage'
 import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/grid.type'
 
 /**
@@ -10,15 +10,16 @@ import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/gr
  * @returns {GridState} An object representing the grid state.
  */
 export const createGrid = (size: number): GridState => {
-  const SCORE_KEY = encode('fusion_merge_score')
-  const BEST_SCORE_KEY = encode('fusion_merge_best_score')
-  const STATE_KEY = encode('fusion_merge_state')
+  const SAVE_KEY = encode('fusion_merge_state')
 
   let score = $state(0)
   let bestScore = $state(0)
-  let state: Grid = Array.from({ length: size }, () => Array(size).fill(null))
-  let emptyTiles: EmptyTiles = {}
   let gameOver = $state(false)
+  let moves = $state(0)
+
+  let grid: Grid = Array.from({ length: size }, () => Array(size).fill(null))
+  let emptyTiles: EmptyTiles = {}
+
 
   /**
    * Adds a tile on the grid at a random position.
@@ -36,13 +37,11 @@ export const createGrid = (size: number): GridState => {
     }
 
     const { x, y } = emptyTiles[key!]
-    state[y][x] = { value: Math.random() < 0.9 ? 1 : 2, x, y, merged: false }
+    grid[y][x] = { value: Math.random() < 0.9 ? 1 : 2, x, y, merged: false }
 
     delete emptyTiles[key!]
 
-    saveGameState(STATE_KEY, state)
-
-    return state[y][x]
+    return grid[y][x]
   }
 
   /**
@@ -57,27 +56,12 @@ export const createGrid = (size: number): GridState => {
    * @returns {Tile} The tile that was moved or merged.
    */
   const trackTileUpdate = (oldX: number, oldY: number, newX: number, newY: number): Tile => {
-    state[oldY][oldX] = null
+    grid[oldY][oldX] = null
 
     emptyTiles[`${ oldY }${ oldX }`] = { x: oldX, y: oldY }
     delete emptyTiles[`${ newY }${ newX }`]
 
-    return state[newY][newX]!
-  }
-
-  /**
-   * Updates the score and the best score.
-   * @since 1.0.0
-   * @version 1.0.0
-   *
-   * @param {number} value The value to add to the score.
-   */
-  const updateScore = (value: number): void => {
-    score += value
-    bestScore = Math.max(score, bestScore)
-
-    saveScore(SCORE_KEY, score)
-    saveScore(BEST_SCORE_KEY, bestScore)
+    return grid[newY][newX]!
   }
 
   /**
@@ -101,11 +85,11 @@ export const createGrid = (size: number): GridState => {
    * @returns {boolean} `true` if any tiles can be merged, `false` otherwise.
    */
   const hasPossibleMerges = (): boolean => {
-    for (let y = 0; y < state.length; y++) {
-      for (let x = 0; x < state.length; x++) {
+    for (let y = 0; y < grid.length; y++) {
+      for (let x = 0; x < grid.length; x++) {
         // Check if any neighbouring tiles can be merged
-        if ((x < state.length - 1 && state[y][x] && state[y][x + 1] && state[y][x]?.value === state[y][x + 1]?.value) ||
-            (y < state.length - 1 && state[y][x] && state[y + 1][x] && state[y][x]?.value === state[y + 1][x]?.value)) {
+        if ((x < grid.length - 1 && grid[y][x] && grid[y][x + 1] && grid[y][x]?.value === grid[y][x + 1]?.value) ||
+            (y < grid.length - 1 && grid[y][x] && grid[y + 1][x] && grid[y][x]?.value === grid[y + 1][x]?.value)) {
           return true
         }
       }
@@ -115,29 +99,38 @@ export const createGrid = (size: number): GridState => {
   }
 
   /**
+   * Saves the game state to local storage.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const save = (): void => saveGameState(SAVE_KEY, { score, bestScore, gameOver, moves, grid })
+
+  /**
    * Initializes a new game or loads the state from local storage.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {boolean} loadState `true` to load the state from local storage, `false` to start a new game.
+   * @param {boolean} reset `true` to reset the game, `false` to load the saved state.
    * @returns {Tile[]} An array of tiles that were added to the grid. Empty if loading saved state.
    */
-  const init = (loadState: boolean = true): Tile[] => {
-    if (loadState) {
-      const savedScore = loadScore(SCORE_KEY)
-      const savedState = savedScore ? loadGameState(STATE_KEY) : null
-      bestScore = loadScore(BEST_SCORE_KEY)
-      
+  const init = (reset: boolean = false): Tile[] => {
+    if (!reset) {
+      const savedState = loadGameState(SAVE_KEY)
+
       if (savedState) {
-        score = savedScore
-        state = savedState
-        return savedState.flat().filter(Boolean) as Tile[]
+        score = savedState.score
+        gameOver = savedState.gameOver
+        moves = savedState.moves
+        grid = savedState.grid
+        bestScore = savedState.bestScore
+
+        return []
       }
     }
 
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
-        state[y][x] = null
+        grid[y][x] = null
         emptyTiles[`${ y }${ x }`] = { x, y }
       }
     }
@@ -146,7 +139,7 @@ export const createGrid = (size: number): GridState => {
     const tile1 = addRandomTile()
     const tile2 = addRandomTile()
 
-    saveScore(SCORE_KEY, score)
+    save()
 
     return [tile1, tile2]
   }
@@ -159,13 +152,12 @@ export const createGrid = (size: number): GridState => {
    * @returns {Tile[]} An array of two tiles that were added to the grid.
    */
   const reset = (): Tile[] => {
-    gameOver = false
     score = 0
+    moves = 0
+    gameOver = false
 
-    return init(false)
+    return init(true)
   }
-
-  init(true)
 
   return {
     /**
@@ -175,15 +167,15 @@ export const createGrid = (size: number): GridState => {
      *
      * @returns {Grid} A two-dimensional array representing the grid.
      */
-    get grid(): Grid { return state },
+    get grid(): Grid { return grid },
     /**
      * Sets the grid to a new state.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @param {Grid} grid The new grid state.
+     * @param {Grid} newGrid The new grid state.
      */
-    set grid(grid: Grid) {state = grid },
+    set grid(newGrid: Grid) {grid = newGrid },
     /**
      * Returns the current score.
      * @since 1.0.0
@@ -209,6 +201,14 @@ export const createGrid = (size: number): GridState => {
      */
     get gameOver(): boolean { return gameOver },
     /**
+     * Returns the number of moves made.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @returns {number} The number of moves made.
+     */
+    get moves(): number { return moves },
+    /**
      * Moves the tiles in the specified direction.
      * @since 1.0.0
      * @version 1.0.0
@@ -222,12 +222,12 @@ export const createGrid = (size: number): GridState => {
       const isReverse = direction === 'down' || direction === 'right'
       const isHorizontal = direction === 'left' || direction === 'right'
 
-      const start = isReverse ? state.length - 1 : 0
-      const end = isReverse ? 0 : state.length
+      const start = isReverse ? size - 1 : 0
+      const end = isReverse ? 0 : size
       const step = isReverse ? -1 : 1
 
       emptyTiles = {}
-      for (let i = 0; i < state.length; i++) {
+      for (let i = 0; i < size; i++) {
         let nextPosition = start
 
         // Iterate over the row or column based on the direction of the move
@@ -235,7 +235,7 @@ export const createGrid = (size: number): GridState => {
           const row = isHorizontal ? i : j
           const col = isHorizontal ? j : i
 
-          const tile = state[row][col]
+          const tile = grid[row][col]
 
           // Skip empty tiles
           if (!tile) {
@@ -249,22 +249,24 @@ export const createGrid = (size: number): GridState => {
           const [newRow, newCol] = mapPositionByDirection(isHorizontal, i, nextPosition)
           const [targetRow, targetCol] = mapPositionByDirection(isHorizontal, i, nextPosition - step)
 
-          const targetTile = targetRow >= 0 && targetCol >= 0 && targetRow < state.length && targetCol < state.length ?
-              state[targetRow][targetCol] : null
+          const targetTile = targetRow >= 0 && targetCol >= 0 && targetRow < size && targetCol < size ?
+              grid[targetRow][targetCol] : null
 
           // Move the tile to the new position
           if (nextPosition !== j) {
-            state[newRow][newCol] = tile
+            grid[newRow][newCol] = tile
             trackTileUpdate(col, row, newCol, newRow)
             moved = true
           }
 
           if (!!targetTile && !targetTile.merged && tile.value === targetTile.value) {
             targetTile.value += 1
-            updateScore(targetTile.value * targetTile.value)
+
+            score += targetTile.value * targetTile.value
+            bestScore = Math.max(score, bestScore)
 
             trackTileUpdate(newCol, newRow, targetCol, targetRow)
-            state[targetRow][targetCol]!.merged = true
+            grid[targetRow][targetCol]!.merged = true
 
             moved = true
             continue
@@ -276,11 +278,13 @@ export const createGrid = (size: number): GridState => {
 
       if (!Object.keys(emptyTiles).length) gameOver = !hasPossibleMerges()
 
-      if (!gameOver) saveGameState(STATE_KEY, state)
+      if (moved) moves++
 
       return moved
     },
     addRandomTile,
+    init,
     reset,
+    save,
   }
 }
