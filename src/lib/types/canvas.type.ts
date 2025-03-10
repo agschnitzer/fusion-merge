@@ -28,7 +28,11 @@ export interface CanvasState {
  * @property {number} scaleFactor The scale factor for the tiles.
  * @property {string} backgroundColor The background colour of the canvas.
  * @property {string} emptyTileColor The background colour of empty tiles.
+ * @property {string} emptyTileBorderColor The border colour of empty tiles.
  * @property {string} textColor The text colour of the tiles.
+ * @property {string[]} atoms The list of atoms used in the game.
+ * @property {string[]} atomColors The list of colours for the atoms.
+ * @property {string[]} atomTextColors The list of text colours for the atoms.
  */
 export interface CanvasOptions {
   gap: number
@@ -37,5 +41,9 @@ export interface CanvasOptions {
   scaleFactor: number
   backgroundColor: string
   emptyTileColor: string
+  emptyTileBorderColor: string
   textColor: string
+  atoms: string[]
+  atomColors: string[]
+  atomTextColors: string[]
 }
