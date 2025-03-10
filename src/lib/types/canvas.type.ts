@@ -8,13 +8,13 @@ import type { Tile } from '$lib/types/grid.type'
  * @interface CanvasState
  * @property {boolean} animating Indicates if the canvas is animating.
  * @property {() => Promise<void>} animateMove Animates the tiles on the canvas to their new positions.
- * @property {(tile: Tile) => void} animateTile Animates a single tile on the canvas.
+ * @property {(tile: Tile) => Promise<void>} animateTile Animates a single tile on the canvas.
  * @property {(tiles: Tile[]) => void} reset Resets the canvas with the given tiles.
  */
 export interface CanvasState {
   animating: boolean
   animateMove: () => Promise<void>
-  animateTile: (tile: Tile) => void
+  animateTile: (tile: Tile) => Promise<void>
   reset: (tiles: Tile[]) => void
 }
 
