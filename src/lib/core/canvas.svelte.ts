@@ -16,9 +16,35 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
     borderRadius: 8,
     animationDuration: 120,
     scaleFactor: 0.15,
-    backgroundColor: '#1d293d',
-    emptyTileColor: 'hsl(223, 5%, 100%, 0.1)',
+    backgroundColor: 'hsl(231,19%,20%)',
+    emptyTileColor: 'hsla(240, 10%, 44%,0.25)',
+    emptyTileBorderColor: 'hsla(234, 19%, 11%, 0.5)',
     textColor: '#1d293d',
+    atoms: ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne'],
+    atomColors: [
+      'hsl(0, 45%, 70%)',      // H (Hydrogen) - softer red
+      'hsl(40, 45%, 75%)',     // He (Helium) - softer orange/yellow
+      'hsl(260, 45%, 70%)',    // Li (Lithium) - softer purple
+      'hsl(120, 35%, 65%)',    // Be (Beryllium) - softer green
+      'hsl(190, 50%, 65%)',    // B (Boron) - softer sky blue
+      'hsl(220, 40%, 50%)',    // C (Carbon) - softer dark blue
+      'hsl(160, 40%, 65%)',    // N (Nitrogen) - softer teal
+      'hsl(200, 50%, 70%)',    // O (Oxygen) - softer bright blue
+      'hsl(60, 50%, 75%)',     // F (Fluorine) - softer yellow
+      'hsl(280, 40%, 75%)',    // Ne (Neon) - softer light purple/pink
+    ],
+    atomTextColors: [
+      'hsl(0, 60%, 25%)',      // H text - dark red
+      'hsl(40, 70%, 25%)',     // He text - dark amber
+      'hsl(260, 60%, 25%)',    // Li text - dark purple
+      'hsl(120, 50%, 25%)',    // Be text - dark green
+      'hsl(190, 65%, 25%)',    // B text - dark sky blue
+      'hsl(220, 70%, 20%)',    // C text - very dark blue
+      'hsl(160, 60%, 25%)',    // N text - dark teal
+      'hsl(200, 70%, 25%)',    // O text - dark blue
+      'hsl(60, 70%, 25%)',     // F text - dark yellow
+      'hsl(280, 60%, 25%)',    // Ne text - dark purple
+    ],
   }
 
   const size = grid.length
@@ -68,18 +94,29 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * @param {number} value The value of the tile.
    */
   const drawGameTile = (x: number, y: number, value: number): void => {
-    context.fillStyle = `hsl(223, 50%, ${ Math.max(30, 100 - 7 * value) }%)`
+    context.fillStyle = options.atomColors[value - 1]
     drawTile(x, y)
 
-    context.fillStyle = options.textColor
-    context.font = `bold 32px sans-serif`
+    context.fillStyle = options.backgroundColor
+    context.font = `bold 40px 'Jersey', sans-serif`
     context.textAlign = 'center'
     context.textBaseline = 'middle'
 
     context.fillText(
-        value.toString(),
+        options.atoms[value - 1],
         options.gap + x * (tileSize + options.gap) + tileSize / 2,
         options.gap + y * (tileSize + options.gap) + tileSize / 2,
+    )
+
+    context.fillStyle = options.atomTextColors[value - 1]
+    context.font = `bold 32px 'Jersey', sans-serif`
+    context.textAlign = 'right'
+    context.textBaseline = 'top'
+
+    context.fillText(
+        value.toString(),
+        options.gap + x * (tileSize + options.gap) + tileSize - 10,
+        options.gap + y * (tileSize + options.gap) + 6,
     )
   }
 
@@ -207,6 +244,8 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       drawTile(x, y, backgroundContext)
+      backgroundContext.strokeStyle = options.emptyTileBorderColor
+      backgroundContext.stroke()
     }
   }
 

@@ -1,1 +1,14 @@
 @import 'tailwindcss';
+
+@font-face {
+    font-family: 'Jersey';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Jersey'), url('/Jersey.woff2') format('woff2');
+    unicode-range: U+020-07F;
+}
+
+@theme {
+    --font-sans: 'Jersey', system-ui, sans-serif;
+}
