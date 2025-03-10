@@ -47,9 +47,9 @@
    * @since 1.0.0
    * @version 1.0.0
    */
-  const reset = (): void => {
+  const reset = async (): void => {
     const tiles = state.reset()
-    canvas.reset(tiles)
+    await canvas.reset(tiles)
   }
 
   $effect(() => {
