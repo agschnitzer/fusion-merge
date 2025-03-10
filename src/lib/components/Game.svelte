@@ -46,8 +46,10 @@
    * Resets the game state and redraws the canvas.
    * @since 1.0.0
    * @version 1.0.0
+   *
+   * @returns {Promise<void>} A promise that resolves when the reset is complete.
    */
-  const reset = async (): void => {
+  const reset = async (): Promise<void> => {
     const tiles = state.reset()
     await canvas.reset(tiles)
   }
