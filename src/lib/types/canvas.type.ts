@@ -9,11 +9,13 @@ import type { Tile } from '$lib/types/grid.type'
  * @property {() => Promise<void>} animateMove Animates the tiles on the canvas to their new positions.
  * @property {(tile: Tile | Tile[]) => Promise<void>} animateTile Animates the given tile(s) on the canvas.
  * @property {(tiles: Tile[]) => Promise<void>} reset Resets the canvas with the given tiles.
+ * @property {() => void} resize Resizes the canvas to fit the window.
  */
 export interface CanvasState {
   animateMove: () => Promise<void>
   animateTile: (tile: Tile | Tile[]) => Promise<void>
   reset: (tiles: Tile[]) => Promise<void>
+  resize: () => void
 }
 
 /**

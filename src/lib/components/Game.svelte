@@ -7,7 +7,7 @@
   import type { CanvasState } from '$lib/types/canvas.type'
   import type { Direction } from '$lib/types/grid.type'
 
-  let { width = 400, size = 4 } = $props()
+  let { width = 450, size = 4 } = $props()
 
   const state = createGrid(size)
   let canvas: CanvasState, element: HTMLCanvasElement
@@ -55,13 +55,13 @@
   }
 
   $effect(() => {
-    canvas = createCanvas(element, state.grid)
+    canvas = createCanvas(element, state.grid, width)
   })
 </script>
 
-<svelte:window onkeydown={handleKeyPress}/>
+<svelte:window onkeydown={handleKeyPress} onresize={() => canvas.resize()}/>
 
-<div class="w-fit mx-auto py-10">
+<div class="w-fit mx-auto px-4 py-10">
   <canvas bind:this={element} {width} height={width} style="--width: {width}px" class="w-[var(--width)] aspect-square mb-4 shadow rounded-xl"></canvas>
   <div class="flex justify-between items-stretch gap-4">
     <Score score={state.score}/>
