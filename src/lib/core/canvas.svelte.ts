@@ -14,7 +14,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   const options: CanvasOptions = {
     gap: 10,
     borderRadius: 8,
-    animationDuration: 140,
+    animationDuration: 120,
     scaleFactor: 0.15,
     backgroundColor: '#1d293d',
     emptyTileColor: 'hsl(223, 5%, 100%, 0.1)',
@@ -133,6 +133,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * @returns {Promise<void>} A promise that resolves when the animation is complete.
    */
   const animate = (callback: (t: number) => void): Promise<void> => {
+    if (animating) cancelAnimation()
     animating = true
     const startTime = performance.now()
 
@@ -142,9 +143,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
         callback(t)
 
         if (t === 1) {
-          // Animation is complete
-          cancelAnimationFrame(animationId)
-          animating = false
+          cancelAnimation()
           return resolve()
         }
 
@@ -166,7 +165,19 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * @returns {Promise<void>} A promise that resolves when the animation is complete.
    */
   const animateTile = ({ x, y, value }: Tile): Promise<void> =>
-      animate(t => drawScaleTile(x, y, value, 0.3 + 0.7 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
+      animate(t => drawScaleTile(x, y, value, 0.5 + 0.5 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
+
+  /**
+   * Cancels the current animation.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const cancelAnimation = (): void => {
+    if (animating) {
+      cancelAnimationFrame(animationId)
+      animating = false
+    }
+  }
 
   /**
    * Clears the canvas and draws the background.
@@ -191,14 +202,6 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   draw()
 
   return {
-    /**
-     * Indicates if the canvas is animating.
-     * @since 1.0.0
-     * @version 1.0.0
-     *
-     * @returns {boolean} `true` if the canvas is animating, `false` otherwise.
-     */
-    get animating(): boolean { return animating },
     /**
      * Animates the tiles on the canvas to their new positions.
      * @since 1.0.0
