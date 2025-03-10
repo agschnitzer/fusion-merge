@@ -39,7 +39,7 @@ export type Grid = (Tile | null)[][]
  * @since 1.0.0
  * @version 1.0.0
  */
-export type EmptyTiles = Record<string, Omit<Tile, 'value'>>
+export type EmptyTiles = Record<string, Pick<Tile, 'x' | 'y'>>
 
 /**
  * Represents a tile on the grid.
@@ -50,9 +50,11 @@ export type EmptyTiles = Record<string, Omit<Tile, 'value'>>
  * @property {number} value The value of the tile.
  * @property {number} x The x coordinate of the tile.
  * @property {number} y The y coordinate of the tile.
+ * @property {boolean} merged Indicates if the tile has been merged.
  */
 export interface Tile {
   value: number
   x: number
   y: number
+  merged: boolean
 }

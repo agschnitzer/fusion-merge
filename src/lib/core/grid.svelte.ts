@@ -30,7 +30,7 @@ export const createGrid = (size: number): GridState => {
     }
 
     const { x, y } = emptyTiles[key!]
-    state[y][x] = { value: Math.random() < 0.9 ? 1 : 2, x, y }
+    state[y][x] = { value: Math.random() < 0.9 ? 1 : 2, x, y, merged: false }
 
     delete emptyTiles[key!]
 
@@ -170,7 +170,6 @@ export const createGrid = (size: number): GridState => {
       emptyTiles = {}
       for (let i = 0; i < state.length; i++) {
         let nextPosition = start
-        let lastMergedTile: Tile | null = null
 
         // Iterate over the row or column based on the direction of the move
         for (let j = start; isReverse ? j >= end : j < end; j += step) {
@@ -186,7 +185,7 @@ export const createGrid = (size: number): GridState => {
           }
 
           // Save the tile position for animation
-          Object.assign(tile, { y: row, x: col })
+          Object.assign(tile, { y: row, x: col, merged: false })
 
           const [newRow, newCol] = mapPositionByDirection(isHorizontal, i, nextPosition)
           const [targetRow, targetCol] = mapPositionByDirection(isHorizontal, i, nextPosition - step)
@@ -201,11 +200,13 @@ export const createGrid = (size: number): GridState => {
             moved = true
           }
 
-          if (!!targetTile && lastMergedTile !== targetTile && tile.value === targetTile.value) {
+          if (!!targetTile && targetTile.merged === false && tile.value === targetTile.value) {
             targetTile.value += 1
             score += targetTile.value * targetTile.value
 
-            lastMergedTile = trackTileUpdate(newCol, newRow, targetCol, targetRow)
+            trackTileUpdate(newCol, newRow, targetCol, targetRow)
+            state[targetRow][targetCol]!.merged = true
+            
             moved = true
             continue
           }
