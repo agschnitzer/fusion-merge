@@ -23,7 +23,7 @@
    * @param {KeyboardEvent} event The keydown event.
    */
   const handleKeyPress = async (event: KeyboardEvent): Promise<void> => {
-    if (state.gameOver || canvas.animating) return
+    if (state.gameOver) return
 
     const directions: Record<string, Direction> = {
       ArrowUp: 'up',
@@ -39,7 +39,7 @@
     await canvas.animateMove()
 
     const tile = state.addRandomTile()
-    canvas.animateTile(tile)
+    await canvas.animateTile(tile)
   }
 
   /**
