@@ -10,16 +10,36 @@
  * @property {boolean} gameOver Indicates if the game is over.
  * @property {(direction: Direction) => boolean} moveTiles Moves the tiles in the specified direction.
  * @property {() => Tile} addRandomTile Adds a tile on the grid at a random position.
+ * @property {(reset?: boolean) => Tile[]} init Initializes the grid with random tiles or loads the saved state.
  * @property {() => Tile[]} reset Resets the grid to its initial state.
+ * @property {() => void} save Saves the current game state.
  */
-export interface GridState {
+export interface GridState extends SaveGameState {
+  moveTiles: (direction: Direction) => boolean
+  addRandomTile: () => Tile
+  init: (reset?: boolean) => Tile[]
+  reset: () => Tile[]
+  save: () => void
+}
+
+/**
+ * Represents the saved state of the game.
+ * @since 1.0.0
+ * @version 1.0.0
+ *
+ * @interface SaveGameState
+ * @property {Grid} grid A grid of tiles.
+ * @property {number} score The current score.
+ * @property {number} bestScore The best score.
+ * @property {boolean} gameOver Indicates if the game is over.
+ * @property {number} moves The number of moves made.
+ */
+export interface SaveGameState {
   grid: Grid
   score: number
   bestScore: number
   gameOver: boolean
-  moveTiles: (direction: Direction) => boolean
-  addRandomTile: () => Tile
-  reset: () => Tile[]
+  moves: number
 }
 
 /**

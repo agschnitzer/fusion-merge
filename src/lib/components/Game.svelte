@@ -40,6 +40,8 @@
 
     const tile = state.addRandomTile()
     await canvas.animateTile(tile)
+
+    state.save()
   }
 
   /**
@@ -55,6 +57,7 @@
   }
 
   $effect(() => {
+    state.init()
     canvas = createCanvas(element, state.grid, width)
   })
 </script>
