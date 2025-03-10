@@ -161,11 +161,16 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {Tile} tile The tile to animate.
+   * @param { Tile | Tile[]} tile The tile to animate.
    * @returns {Promise<void>} A promise that resolves when the animation is complete.
    */
-  const animateTile = ({ x, y, value }: Tile): Promise<void> =>
-      animate(t => drawScaleTile(x, y, value, 0.5 + 0.5 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
+  const animateTile = (tile: Tile | Tile[]): Promise<void> =>
+      animate(t => {
+        const tiles = Array.isArray(tile) ? tile : [tile]
+
+        tiles.forEach(({ x, y, value }) =>
+            drawScaleTile(x, y, value, 0.5 + 0.5 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
+      })
 
   /**
    * Cancels the current animation.
@@ -218,9 +223,9 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
      *
      * @param {Tile[]} tiles The tiles to draw on the canvas.
      */
-    reset: (tiles: Tile[]): void => {
+    reset: (tiles: Tile[]): Promise<void> => {
       clear()
-      tiles.forEach(animateTile)
+      return animateTile(tiles)
     },
   }
 }
