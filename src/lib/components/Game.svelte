@@ -61,7 +61,7 @@
 
 <svelte:window onkeydown={handleKeyPress} onresize={() => canvas.resize()}/>
 
-<div class="w-fit mx-auto px-4 py-10">
+<div class="w-fit mx-auto">
   <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px"
           class="w-[var(--initialWidth)] aspect-square mb-4 shadow rounded-xl"></canvas>
   <div class="flex justify-between items-stretch gap-4">
