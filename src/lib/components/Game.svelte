@@ -62,8 +62,7 @@
 <svelte:window onkeydown={handleKeyPress}/>
 
 <div class="w-fit mx-auto py-10">
-  <canvas bind:this={element} {width} height={width} style="--width: {width}px"
-          class="w-[var(--width)] aspect-square mb-4 shadow border border-slate-700 rounded-xl"></canvas>
+  <canvas bind:this={element} {width} height={width} style="--width: {width}px" class="w-[var(--width)] aspect-square mb-4 shadow rounded-xl"></canvas>
   <div class="flex justify-between items-stretch gap-4">
     <Score score={state.score}/>
     <Controls {reset}/>
