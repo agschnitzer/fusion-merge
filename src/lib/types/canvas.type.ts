@@ -27,6 +27,7 @@ export interface CanvasState {
  * @property {number} gap The gap between tiles.
  * @property {number} borderRadius The border radius of the tiles.
  * @property {number} animationDuration The duration of the animation in milliseconds.
+ * @property {number} scaleFactor The scale factor for the tiles.
  * @property {string} backgroundColor The background colour of the canvas.
  * @property {string} emptyTileColor The background colour of empty tiles.
  * @property {string} textColor The text colour of the tiles.
@@ -35,6 +36,7 @@ export interface CanvasOptions {
   gap: number
   borderRadius: number
   animationDuration: number
+  scaleFactor: number
   backgroundColor: string
   emptyTileColor: string
   textColor: string
