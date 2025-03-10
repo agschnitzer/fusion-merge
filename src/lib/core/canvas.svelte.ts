@@ -8,9 +8,10 @@ import type { Grid, Tile } from '$lib/types/grid.type'
  *
  * @param {HTMLCanvasElement} canvas The canvas element to draw on.
  * @param {Grid} grid The grid of tiles.
+ * @param {number} width The width of the canvas.
  * @returns {CanvasState} A canvas state object.
  */
-export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState => {
+export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid, width: number): CanvasState => {
   const options: CanvasOptions = {
     gap: 10,
     borderRadius: 8,
@@ -48,20 +49,12 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   }
 
   const size = grid.length
-  const tileSize = (canvas.width - options.gap * (size + 1)) / size
-
-  let animating = false
-  let animationId: number
-
   const context = canvas.getContext('2d')!
 
-  const pixelRatio = window.devicePixelRatio || 1
-  canvas.width = canvas.clientWidth * pixelRatio
-  canvas.height = canvas.clientHeight * pixelRatio
-  context.scale(pixelRatio, pixelRatio)
-
-  const background = canvas.cloneNode() as HTMLCanvasElement
-  const backgroundContext = background.getContext('2d')!
+  let background = canvas.cloneNode() as HTMLCanvasElement
+  let tileSize = (canvas.width - options.gap * (size + 1)) / size
+  let animating = false
+  let animationId: number
 
   /**
    * Draws a single tile on the canvas.
@@ -98,7 +91,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
     drawTile(x, y)
 
     context.fillStyle = options.backgroundColor
-    context.font = `bold 40px 'Jersey', sans-serif`
+    context.font = `bold ${ canvas.width / 18 }px 'Jersey', sans-serif`
     context.textAlign = 'center'
     context.textBaseline = 'middle'
 
@@ -109,7 +102,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
     )
 
     context.fillStyle = options.atomTextColors[value - 1]
-    context.font = `bold 32px 'Jersey', sans-serif`
+    context.font = `bold ${ canvas.width / 28 }px 'Jersey', sans-serif`
     context.textAlign = 'right'
     context.textBaseline = 'top'
 
@@ -207,13 +200,12 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * @param { Tile | Tile[]} tile The tile to animate.
    * @returns {Promise<void>} A promise that resolves when the animation is complete.
    */
-  const animateTile = (tile: Tile | Tile[]): Promise<void> =>
-      animate(t => {
-        const tiles = Array.isArray(tile) ? tile : [tile]
+  const animateTile = (tile: Tile | Tile[]): Promise<void> => animate(t => {
+    const tiles = Array.isArray(tile) ? tile : [tile]
 
-        tiles.forEach(({ x, y, value }) =>
-            drawScaleTile(x, y, value, 0.5 + 0.5 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
-      })
+    tiles.forEach(({ x, y, value }) =>
+        drawScaleTile(x, y, value, 0.5 + 0.5 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
+  })
 
   /**
    * Cancels the current animation.
@@ -237,19 +229,42 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
     context.drawImage(background, 0, 0)
   }
 
-  backgroundContext.fillStyle = options.backgroundColor
-  backgroundContext.fillRect(0, 0, canvas.width, canvas.height)
+  /**
+   * Resizes the canvas to fit the window.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const resize = (): void => {
+    const canvasWidth = Math.min(window.innerWidth - 32, width)
+    canvas.style.width = `${ canvasWidth }px`
+    canvas.style.height = `${ canvasWidth }px`
 
-  backgroundContext.fillStyle = options.emptyTileColor
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      drawTile(x, y, backgroundContext)
-      backgroundContext.strokeStyle = options.emptyTileBorderColor
-      backgroundContext.stroke()
+    const pixelRatio = window.devicePixelRatio || 1
+    canvas.width = canvasWidth * pixelRatio
+    canvas.height = canvasWidth * pixelRatio
+    context.scale(pixelRatio, pixelRatio)
+
+    tileSize = (canvasWidth - options.gap * (size + 1)) / size
+
+    background = canvas.cloneNode() as HTMLCanvasElement
+    const backgroundContext = background.getContext('2d')!
+
+    backgroundContext.fillStyle = options.backgroundColor
+    backgroundContext.fillRect(0, 0, canvas.width, canvas.height)
+
+    backgroundContext.fillStyle = options.emptyTileColor
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        drawTile(x, y, backgroundContext)
+        backgroundContext.strokeStyle = options.emptyTileBorderColor
+        backgroundContext.stroke()
+      }
     }
+
+    draw()
   }
 
-  draw()
+  resize()
 
   return {
     /**
@@ -272,5 +287,6 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
       clear()
       return animateTile(tiles)
     },
+    resize,
   }
 }
