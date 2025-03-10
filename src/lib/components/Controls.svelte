@@ -3,4 +3,4 @@
   let { reset } = $props()
 </script>
 
-<button onclick={reset} class="px-3 py-2 font-medium text-2xl bg-slate-700 text-slate-100 rounded-md cursor-pointer">New Game</button>
+<button onclick={reset} class="px-3 py-2 text-2xl bg-main text-default rounded-lg cursor-pointer">New Game</button>
