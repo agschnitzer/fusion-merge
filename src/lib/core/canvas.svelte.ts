@@ -28,6 +28,12 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   let animationId: number
 
   const context = canvas.getContext('2d')!
+
+  const pixelRatio = window.devicePixelRatio || 1
+  canvas.width = canvas.clientWidth * pixelRatio
+  canvas.height = canvas.clientHeight * pixelRatio
+  context.scale(pixelRatio, pixelRatio)
+
   const background = canvas.cloneNode() as HTMLCanvasElement
   const backgroundContext = background.getContext('2d')!
 
