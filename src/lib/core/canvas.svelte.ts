@@ -131,6 +131,28 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   }
 
   /**
+   * Animates a single tile on the canvas.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {Tile} tile The tile to animate.
+   * @returns {Promise<void>} A promise that resolves when the animation is complete.
+   */
+  const animateTile = ({ x, y, value }: Tile): Promise<void> => animate(t => {
+    const scale = 0.3 + 0.7 * t + 0.3 * Math.sin(Math.PI * t) * (1 - t)
+    const centerX = options.gap + x * (tileSize + options.gap) + tileSize / 2
+    const centerY = options.gap + y * (tileSize + options.gap) + tileSize / 2
+
+    context.save()
+    context.translate(centerX, centerY)
+    context.scale(scale, scale)
+    context.translate(-centerX, -centerY)
+
+    drawGameTile(x, y, value)
+    context.restore()
+  })
+
+  /**
    * Clears the canvas and draws the background.
    * @since 1.0.0
    * @version 1.0.0
@@ -169,14 +191,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
      * @returns {Promise<void>} A promise that resolves when the animation is complete.
      */
     animateMove: (): Promise<void> => animate(draw),
-    /**
-     * Animates a single tile on the canvas.
-     * @since 1.0.0
-     * @version 1.0.0
-     *
-     * @param {Tile} tile The tile to animate.
-     */
-    animateTile: ({ x, y, value }: Tile): void => drawGameTile(x, y, value),
+    animateTile,
     /**
      * Resets the canvas with the given tiles.
      * @since 1.0.0
@@ -186,7 +201,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
      */
     reset: (tiles: Tile[]): void => {
       clear()
-      tiles.forEach(({ x, y, value }) => drawGameTile(x, y, value))
+      tiles.forEach(animateTile)
     },
   }
 }
