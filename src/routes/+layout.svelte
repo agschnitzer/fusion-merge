@@ -4,4 +4,4 @@
   let { children } = $props()
 </script>
 
-{@render children()}
+<main class="px-4 py-10">{@render children()}</main>
