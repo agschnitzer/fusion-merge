@@ -14,7 +14,8 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   const options: CanvasOptions = {
     gap: 10,
     borderRadius: 8,
-    animationDuration: 125,
+    animationDuration: 140,
+    scaleFactor: 0.15,
     backgroundColor: '#1d293d',
     emptyTileColor: 'hsl(223, 5%, 100%, 0.1)',
     textColor: '#1d293d',
@@ -77,6 +78,29 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   }
 
   /**
+   * Draws a scaled tile on the canvas.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {number} x The x-coordinate of the tile.
+   * @param {number} y The y-coordinate of the tile.
+   * @param {number} value The value of the tile.
+   * @param {number} scale The scale factor for the tile.
+   */
+  const drawScaleTile = (x: number, y: number, value: number, scale: number): void => {
+    const centerX = options.gap + x * (tileSize + options.gap) + tileSize / 2
+    const centerY = options.gap + y * (tileSize + options.gap) + tileSize / 2
+
+    context.save()
+    context.translate(centerX, centerY)
+    context.scale(scale, scale)
+    context.translate(-centerX, -centerY)
+
+    drawGameTile(x, y, value)
+    context.restore()
+  }
+
+  /**
    * Draws the grid on the canvas.
    * @since 1.0.0
    * @version 1.0.0
@@ -91,8 +115,11 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
         const tile = grid[i][j]
         if (!tile) continue
 
-        const { x, y, value } = tile
-        drawGameTile(x + (j - x) * t, y + (i - y) * t, value)
+        const { x, y, value, merged } = tile
+        const xPos = x + (j - x) * t
+        const yPos = y + (i - y) * t
+
+        merged ? drawScaleTile(xPos, yPos, value, 1 + options.scaleFactor * Math.sin(Math.PI * t)) : drawGameTile(xPos, yPos, value)
       }
     }
   }
@@ -138,19 +165,8 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * @param {Tile} tile The tile to animate.
    * @returns {Promise<void>} A promise that resolves when the animation is complete.
    */
-  const animateTile = ({ x, y, value }: Tile): Promise<void> => animate(t => {
-    const scale = 0.3 + 0.7 * t + 0.3 * Math.sin(Math.PI * t) * (1 - t)
-    const centerX = options.gap + x * (tileSize + options.gap) + tileSize / 2
-    const centerY = options.gap + y * (tileSize + options.gap) + tileSize / 2
-
-    context.save()
-    context.translate(centerX, centerY)
-    context.scale(scale, scale)
-    context.translate(-centerX, -centerY)
-
-    drawGameTile(x, y, value)
-    context.restore()
-  })
+  const animateTile = ({ x, y, value }: Tile): Promise<void> =>
+      animate(t => drawScaleTile(x, y, value, 0.3 + 0.7 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
 
   /**
    * Clears the canvas and draws the background.
