@@ -1,3 +1,4 @@
+import { encode, loadGameState, loadScore, saveGameState, saveScore } from '$lib/core/storage'
 import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/grid.type'
 
 /**
@@ -9,9 +10,14 @@ import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/gr
  * @returns {GridState} An object representing the grid state.
  */
 export const createGrid = (size: number): GridState => {
+  const SCORE_KEY = encode('fusion_merge_score')
+  const BEST_SCORE_KEY = encode('fusion_merge_best_score')
+  const STATE_KEY = encode('fusion_merge_state')
+
+  let score = $state(0)
+  let bestScore = $state(0)
   let state: Grid = Array.from({ length: size }, () => Array(size).fill(null))
   let emptyTiles: EmptyTiles = {}
-  let score = $state(0)
   let gameOver = $state(false)
 
   /**
@@ -34,6 +40,8 @@ export const createGrid = (size: number): GridState => {
 
     delete emptyTiles[key!]
 
+    saveGameState(STATE_KEY, state)
+
     return state[y][x]
   }
 
@@ -55,6 +63,21 @@ export const createGrid = (size: number): GridState => {
     delete emptyTiles[`${ newY }${ newX }`]
 
     return state[newY][newX]!
+  }
+
+  /**
+   * Updates the score and the best score.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {number} value The value to add to the score.
+   */
+  const updateScore = (value: number): void => {
+    score += value
+    bestScore = Math.max(score, bestScore)
+
+    saveScore(SCORE_KEY, score)
+    saveScore(BEST_SCORE_KEY, bestScore)
   }
 
   /**
@@ -92,13 +115,26 @@ export const createGrid = (size: number): GridState => {
   }
 
   /**
-   * Resets the grid to its initial state.
+   * Initializes a new game or loads the state from local storage.
    * @since 1.0.0
    * @version 1.0.0
+   *
+   * @param {boolean} loadState `true` to load the state from local storage, `false` to start a new game.
+   * @returns {Tile[]} An array of tiles that were added to the grid. Empty if loading saved state.
    */
-  const reset = (): Tile[] => {
-    gameOver = false
-    score = 0
+  const init = (loadState: boolean = true): Tile[] => {
+    if (loadState) {
+      const savedScore = loadScore(SCORE_KEY)
+      const savedState = loadGameState(STATE_KEY)
+      bestScore = loadScore(BEST_SCORE_KEY)
+
+      if (savedScore && savedState) {
+        score = savedScore
+        state = savedState
+
+        return savedState.flat().filter(Boolean) as Tile[]
+      }
+    }
 
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
@@ -111,10 +147,26 @@ export const createGrid = (size: number): GridState => {
     const tile1 = addRandomTile()
     const tile2 = addRandomTile()
 
+    saveScore(SCORE_KEY, score)
+
     return [tile1, tile2]
   }
 
-  reset()
+  /**
+   * Resets the grid to its initial state.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @returns {Tile[]} An array of two tiles that were added to the grid.
+   */
+  const reset = (): Tile[] => {
+    gameOver = false
+    score = 0
+
+    return init(false)
+  }
+
+  init(true)
 
   return {
     /**
@@ -141,6 +193,14 @@ export const createGrid = (size: number): GridState => {
      * @returns {number} The current score.
      */
     get score(): number { return score },
+    /**
+     * Returns the best score.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @returns {number} The best score.
+     */
+    get bestScore(): number { return bestScore },
     /**
      * Returns the game over state.
      * @since 1.0.0
@@ -202,7 +262,7 @@ export const createGrid = (size: number): GridState => {
 
           if (!!targetTile && !targetTile.merged && tile.value === targetTile.value) {
             targetTile.value += 1
-            score += targetTile.value * targetTile.value
+            updateScore(targetTile.value * targetTile.value)
 
             trackTileUpdate(newCol, newRow, targetCol, targetRow)
             state[targetRow][targetCol]!.merged = true
@@ -216,6 +276,8 @@ export const createGrid = (size: number): GridState => {
       }
 
       if (!Object.keys(emptyTiles).length) gameOver = !hasPossibleMerges()
+
+      if (!gameOver) saveGameState(STATE_KEY, state)
 
       return moved
     },

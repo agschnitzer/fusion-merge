@@ -16,4 +16,6 @@
     --color-default: hsl(231, 19%, 100%);
     --color-main: hsl(231, 19%, 20%);
     --color-highlight: hsla(231, 19%, 85%, 0.7);
+
+    --breakpoint-xs: 24rem;
 }

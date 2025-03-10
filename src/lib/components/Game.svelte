@@ -64,8 +64,8 @@
 <div class="w-fit mx-auto">
   <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px"
           class="w-[var(--initialWidth)] aspect-square mb-4 bg-main rounded-xl"></canvas>
-  <div class="flex justify-between items-stretch gap-4">
-    <Score score={state.score}/>
+  <div class="flex flex-col xs:flex-row justify-between gap-4">
+    <Score score={state.score} bestScore={state.bestScore} />
     <Controls {reset}/>
   </div>
   {#if state.gameOver}
