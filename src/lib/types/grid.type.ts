@@ -6,6 +6,7 @@
  * @interface GridState
  * @property {Grid} grid A grid of tiles.
  * @property {number} score The current score.
+ * @property {number} bestScore The best score.
  * @property {boolean} gameOver Indicates if the game is over.
  * @property {(direction: Direction) => boolean} moveTiles Moves the tiles in the specified direction.
  * @property {() => Tile} addRandomTile Adds a tile on the grid at a random position.
@@ -14,6 +15,7 @@
 export interface GridState {
   grid: Grid
   score: number
+  bestScore: number
   gameOver: boolean
   moveTiles: (direction: Direction) => boolean
   addRandomTile: () => Tile
