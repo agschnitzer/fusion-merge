@@ -1,4 +1,4 @@
-import { encode, loadGameState, saveGameState } from '$lib/core/storage'
+import { encode, loadGameState, saveGameState } from '$lib/helpers/storage'
 import type { Direction, EmptyTilePositions, Grid, GridState, Tile } from '$lib/types/grid.type'
 
 /**
