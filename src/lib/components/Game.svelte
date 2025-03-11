@@ -36,10 +36,10 @@
     // Return if the pressed key is not a valid direction or no tiles can be moved in that direction
     if (!direction || !state.moveTiles(direction)) return
 
-    await canvas.animateMove()
+    await canvas.animateGridMovement()
 
     const tile = state.addTile()
-    await canvas.animateTile(tile)
+    await canvas.animateTileEntry(tile)
 
     state.saveGrid()
   }
@@ -55,16 +55,17 @@
     const tiles = state.resetGrid()
     state.saveGrid()
 
-    await canvas.reset(tiles)
+    await canvas.initializeWithTiles(tiles)
   }
 
   $effect(() => {
     state.initializeGrid()
-    canvas = createCanvas(element, state.grid, width)
+    canvas = createCanvas(element, state.grid)
+    canvas.adjustCanvasSize()
   })
 </script>
 
-<svelte:window onkeydown={handleKeyPress} onresize={() => canvas.resize()}/>
+<svelte:window onkeydown={handleKeyPress} onresize={() => canvas.adjustCanvasSize()}/>
 
 <div class="w-fit mx-auto">
   <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px"

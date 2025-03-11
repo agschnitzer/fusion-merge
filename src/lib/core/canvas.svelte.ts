@@ -2,27 +2,30 @@ import type { CanvasOptions, CanvasState } from '$lib/types/canvas.type'
 import type { Grid, Tile } from '$lib/types/grid.type'
 
 /**
- * Creates a canvas state for the game.
+ * Creates a canvas state for a game.
  * @since 1.0.0
  * @version 1.0.0
  *
  * @param {HTMLCanvasElement} canvas The canvas element to draw on.
  * @param {Grid} grid The grid of tiles.
- * @param {number} width The width of the canvas.
  * @returns {CanvasState} A canvas state object.
  */
-export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid, width: number): CanvasState => {
+export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState => {
+  const tileGap = 10
   const options: CanvasOptions = {
-    gap: 10,
-    borderRadius: 8,
+    canvasWidth: canvas.width,
     animationDuration: 120,
-    scaleFactor: 0.15,
+    pulseScaleFactor: 0.15,
+    gridSize: grid.length,
+    tileSize: (canvas.width - tileGap * (grid.length + 1)) / grid.length,
+    tileGap,
+    tileBorderRadius: 8,
     backgroundColor: 'hsl(231,19%,20%)',
-    emptyTileColor: 'hsla(240, 10%, 44%,0.25)',
+    emptyTileBackgroundColor: 'hsla(240, 10%, 44%,0.25)',
     emptyTileBorderColor: 'hsla(234, 19%, 11%, 0.5)',
-    textColor: '#1d293d',
-    atoms: ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne'],
-    atomColors: [
+    defaultTextColor: 'hsl(218, 36%, 18%)',
+    atomSymbols: ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne'],
+    atomTileBackgroundColors: [
       'hsl(0, 45%, 70%)',      // H (Hydrogen) - softer red
       'hsl(40, 45%, 75%)',     // He (Helium) - softer orange/yellow
       'hsl(260, 45%, 70%)',    // Li (Lithium) - softer purple
@@ -35,50 +38,97 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid, width: numbe
       'hsl(280, 40%, 75%)',    // Ne (Neon) - softer light purple/pink
     ],
     atomTextColors: [
-      'hsl(0, 60%, 25%)',      // H text - dark red
-      'hsl(40, 70%, 25%)',     // He text - dark amber
-      'hsl(260, 60%, 25%)',    // Li text - dark purple
-      'hsl(120, 50%, 25%)',    // Be text - dark green
-      'hsl(190, 65%, 25%)',    // B text - dark sky blue
-      'hsl(220, 70%, 20%)',    // C text - very dark blue
-      'hsl(160, 60%, 25%)',    // N text - dark teal
-      'hsl(200, 70%, 25%)',    // O text - dark blue
-      'hsl(60, 70%, 25%)',     // F text - dark yellow
-      'hsl(280, 60%, 25%)',    // Ne text - dark purple
+      'hsl(0, 60%, 25%)',      // H (Hydrogen) - dark red
+      'hsl(40, 70%, 25%)',     // He (Helium) - dark amber
+      'hsl(260, 60%, 25%)',    // Li (Lithium) - dark purple
+      'hsl(120, 50%, 25%)',    // Be (Beryllium) - dark green
+      'hsl(190, 65%, 25%)',    // B (Boron) - dark sky blue
+      'hsl(220, 70%, 20%)',    // C (Carbon) - very dark blue
+      'hsl(160, 60%, 25%)',    // N (Nitrogen) - dark teal
+      'hsl(200, 70%, 25%)',    // O (Oxygen) - dark blue
+      'hsl(60, 70%, 25%)',     // F (Fluorine) - dark yellow
+      'hsl(280, 60%, 25%)',    // Ne (Neon) - dark purple
     ],
   }
 
-  const size = grid.length
-  const context = canvas.getContext('2d')!
+  let animationFrameId: number | null = $state(null)
 
-  let background = canvas.cloneNode() as HTMLCanvasElement
-  let tileSize = (canvas.width - options.gap * (size + 1)) / size
-  let animating = false
-  let animationId: number
+  const canvasContext = canvas.getContext('2d')!
+  let backgroundCanvas = canvas.cloneNode() as HTMLCanvasElement
 
   /**
-   * Draws a single tile on the canvas.
+   * Calculates the starting position of a tile.
    * @since 1.0.0
    * @version 1.0.0
    *
    * @param {number} x The x-coordinate of the tile.
    * @param {number} y The y-coordinate of the tile.
-   * @param {CanvasRenderingContext2D} [ctx = context] The canvas context to draw on.
+   * @returns {{x: number, y: number}} The starting position of the tile.
    */
-  const drawTile = (x: number, y: number, ctx: CanvasRenderingContext2D = context): void => {
+  const getTileStart = (x: number, y: number): { x: number, y: number } => ({
+    x: options.tileGap + x * (options.tileSize + options.tileGap),
+    y: options.tileGap + y * (options.tileSize + options.tileGap),
+  })
+
+  /**
+   * Calculates the center position of a tile.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {number} x The x-coordinate of the tile.
+   * @param {number} y The y-coordinate of the tile.
+   * @returns {{x: number, y: number}} The center position of the tile.
+   */
+  const getTileCenter = (x: number, y: number): { x: number, y: number } => {
+    const start = getTileStart(x, y)
+
+    return {
+      x: start.x + options.tileSize / 2,
+      y: start.y + options.tileSize / 2,
+    }
+  }
+
+  /**
+   * Draws text on the canvas.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {string} text The text content to draw.
+   * @param {number} x The x-coordinate of the text.
+   * @param {number} y The y-coordinate of the text.
+   * @param {number} size The font size of the text.
+   * @param {string} color The color of the text.
+   */
+  const drawText = (text: string, x: number, y: number, size: number, color: string): void => {
+    canvasContext.fillStyle = color
+    canvasContext.font = `${ size }px 'Jersey', sans-serif`
+    canvasContext.textAlign = 'center'
+    canvasContext.textBaseline = 'middle'
+
+    canvasContext.fillText(text, x, y)
+  }
+
+  /**
+   * Draws a tile shape on the canvas.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {number} x The x-coordinate of the tile.
+   * @param {number} y The y-coordinate of the tile.
+   * @param {string} backgroundColor The background colour of the tile.
+   * @param {CanvasRenderingContext2D} [ctx = context] The canvas rendering context.
+   */
+  const drawTileShape = (x: number, y: number, backgroundColor: string, ctx: CanvasRenderingContext2D = canvasContext): void => {
+    const tileStart = getTileStart(x, y)
+
+    ctx.fillStyle = backgroundColor
     ctx.beginPath()
-    ctx.roundRect(
-        options.gap + x * (tileSize + options.gap),
-        options.gap + y * (tileSize + options.gap),
-        tileSize,
-        tileSize,
-        options.borderRadius,
-    )
+    ctx.roundRect(tileStart.x, tileStart.y, options.tileSize, options.tileSize, options.tileBorderRadius)
     ctx.fill()
   }
 
   /**
-   * Draws a game tile on the canvas.
+   * Draws an atom tile on the canvas.
    * @since 1.0.0
    * @version 1.0.0
    *
@@ -86,35 +136,28 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid, width: numbe
    * @param {number} y The y-coordinate of the tile.
    * @param {number} value The value of the tile.
    */
-  const drawGameTile = (x: number, y: number, value: number): void => {
-    context.fillStyle = options.atomColors[value - 1]
-    drawTile(x, y)
+  const drawAtomTile = (x: number, y: number, value: number): void => {
+    drawTileShape(x, y, options.atomTileBackgroundColors[value - 1])
 
-    context.fillStyle = options.backgroundColor
-    context.font = `bold ${ canvas.width / 18 }px 'Jersey', sans-serif`
-    context.textAlign = 'center'
-    context.textBaseline = 'middle'
+    const tileStart = getTileStart(x, y)
+    const tileCenter = getTileCenter(x, y)
+    const numberOffset = options.tileSize / 6
 
-    context.fillText(
-        options.atoms[value - 1],
-        options.gap + x * (tileSize + options.gap) + tileSize / 2,
-        options.gap + y * (tileSize + options.gap) + tileSize / 2,
-    )
+    // Draw the atom symbol
+    drawText(options.atomSymbols[value - 1], tileCenter.x, tileCenter.y, options.tileSize * 0.45, options.backgroundColor)
 
-    context.fillStyle = options.atomTextColors[value - 1]
-    context.font = `bold ${ canvas.width / 28 }px 'Jersey', sans-serif`
-    context.textAlign = 'right'
-    context.textBaseline = 'top'
-
-    context.fillText(
+    // Draw the atom number
+    drawText(
         value.toString(),
-        options.gap + x * (tileSize + options.gap) + tileSize - 10,
-        options.gap + y * (tileSize + options.gap) + 6,
+        tileStart.x + options.tileSize - numberOffset,
+        tileStart.y + numberOffset,
+        options.tileSize * 0.3,
+        options.atomTextColors[value - 1],
     )
   }
 
   /**
-   * Draws a scaled tile on the canvas.
+   * Draws a scaled atom tile on the canvas.
    * @since 1.0.0
    * @version 1.0.0
    *
@@ -123,170 +166,177 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid, width: numbe
    * @param {number} value The value of the tile.
    * @param {number} scale The scale factor for the tile.
    */
-  const drawScaleTile = (x: number, y: number, value: number, scale: number): void => {
-    const centerX = options.gap + x * (tileSize + options.gap) + tileSize / 2
-    const centerY = options.gap + y * (tileSize + options.gap) + tileSize / 2
+  const drawScaledAtomTile = (x: number, y: number, value: number, scale: number): void => {
+    const tileCenter = getTileCenter(x, y)
 
-    context.save()
-    context.translate(centerX, centerY)
-    context.scale(scale, scale)
-    context.translate(-centerX, -centerY)
+    canvasContext.save()
+    canvasContext.translate(tileCenter.x, tileCenter.y)
+    canvasContext.scale(scale, scale)
+    canvasContext.translate(-tileCenter.x, -tileCenter.y)
 
-    drawGameTile(x, y, value)
-    context.restore()
+    drawAtomTile(x, y, value)
+    canvasContext.restore()
   }
 
   /**
-   * Draws the grid on the canvas.
+   * Draws the animated grid on the canvas.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {number} t The animation progress, from 0 to 1.
+   * @param {number} t The animation progress (0 to 1).
    */
-  const draw = (t: number = 1): void => {
-    clear()
+  const drawAnimatedGrid = (t: number = 1): void => {
+    resetCanvas()
 
-    for (let i = 0; i < size; i++) {
-      for (let j = 0; j < size; j++) {
-        const tile = grid[i][j]
+    for (let row = 0; row < options.gridSize; row++) {
+      for (let column = 0; column < options.gridSize; column++) {
+        const tile = grid[row][column]
         if (!tile) continue
 
-        const { column, row, value, mergedThisTurn } = tile
-        const xPos = column + (j - column) * t
-        const yPos = row + (i - row) * t
+        const { row: tileRow, column: tileColumn, value, mergedThisTurn } = tile
+        const animatedX = tileColumn + (column - tileColumn) * t
+        const animatedY = tileRow + (row - tileRow) * t
 
-        mergedThisTurn ? drawScaleTile(xPos, yPos, value, 1 + options.scaleFactor * Math.sin(Math.PI * t)) : drawGameTile(xPos, yPos, value)
+        // Apply scaling effect for merged tiles, otherwise draw normally
+        if (mergedThisTurn) {
+          const pulseScale = 1 + options.pulseScaleFactor * Math.sin(Math.PI * t)
+          drawScaledAtomTile(animatedX, animatedY, value, pulseScale)
+        } else {
+          drawAtomTile(animatedX, animatedY, value)
+        }
       }
     }
   }
 
   /**
-   * Animates the canvas.
+   * Resets the canvas to its initial state.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const resetCanvas = (): void => {
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height)
+    canvasContext.drawImage(backgroundCanvas, 0, 0)
+  }
+
+  /**
+   * Stops the current animation.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const stopAnimation = (): void => {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId)
+      animationFrameId = null
+    }
+  }
+
+  /**
+   * Animates a callback function over a specified duration.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {Function} callback The function to call on each animation frame.
+   * @param {(t: number) => void} callback The callback function to call on each animation frame.
    * @returns {Promise<void>} A promise that resolves when the animation is complete.
    */
   const animate = (callback: (t: number) => void): Promise<void> => {
-    if (animating) cancelAnimation()
-    animating = true
-    const startTime = performance.now()
+    stopAnimation()
 
+    const startTime = performance.now()
     return new Promise(resolve => {
+      /**
+       * Animation loop function.
+       * @since 1.0.0
+       * @version 1.0.0
+       *
+       * @param {number} time The current time in milliseconds.
+       */
       const animationLoop = (time: number): void => {
         const t = Math.min((time - startTime) / options.animationDuration, 1)
         callback(t)
 
         if (t === 1) {
-          cancelAnimation()
+          stopAnimation()
           return resolve()
         }
 
-        // Continue the animation if not complete
-        animationId = requestAnimationFrame(animationLoop)
+        animationFrameId = requestAnimationFrame(animationLoop)
       }
 
-      // Start the animation
-      animationId = requestAnimationFrame(animationLoop)
+      animationFrameId = requestAnimationFrame(animationLoop)
     })
   }
 
   /**
-   * Animates a single tile on the canvas.
+   * Animates the entry of a tile or tiles into the canvas.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param { Tile | Tile[]} tile The tile to animate.
+   * @param {Tile | Tile[]} tile The tile or tiles to animate.
    * @returns {Promise<void>} A promise that resolves when the animation is complete.
    */
-  const animateTile = (tile: Tile | Tile[]): Promise<void> => animate(t => {
+  const animateTileEntry = (tile: Tile | Tile[]): Promise<void> => animate(t => {
     const tiles = Array.isArray(tile) ? tile : [tile]
-
     tiles.forEach(({ column, row, value }) =>
-        drawScaleTile(column, row, value, 0.5 + 0.5 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
+        drawScaledAtomTile(column, row, value, 0.5 + 0.5 * t + options.pulseScaleFactor * Math.sin(Math.PI * t) * (1 - t)))
   })
 
   /**
-   * Cancels the current animation.
+   * Animates the movement of the grid.
    * @since 1.0.0
    * @version 1.0.0
+   *
+   * @returns {Promise<void>} A promise that resolves when the animation is complete.
    */
-  const cancelAnimation = (): void => {
-    if (animating) {
-      cancelAnimationFrame(animationId)
-      animating = false
-    }
+  const animateGridMovement = (): Promise<void> => animate(drawAnimatedGrid)
+
+  /**
+   * Initializes the canvas with the given tiles.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {Tile[]} tiles The tiles to draw on the canvas.
+   */
+  const initializeWithTiles = (tiles: Tile[]): Promise<void> => {
+    resetCanvas()
+    return animateTileEntry(tiles)
   }
 
   /**
-   * Clears the canvas and draws the background.
+   * Adjusts the canvas size based on the current window size.
    * @since 1.0.0
    * @version 1.0.0
    */
-  const clear = (): void => {
-    context.clearRect(0, 0, canvas.width, canvas.height)
-    context.drawImage(background, 0, 0)
-  }
+  const adjustCanvasSize = (): void => {
+    const canvasWidth = Math.min(window.innerWidth - 32, options.canvasWidth)
+    const pixelRatio = window.devicePixelRatio || 1
+    const backgroundCanvasContext = backgroundCanvas.getContext('2d')!
 
-  /**
-   * Resizes the canvas to fit the window.
-   * @since 1.0.0
-   * @version 1.0.0
-   */
-  const resize = (): void => {
-    const canvasWidth = Math.min(window.innerWidth - 32, width)
     canvas.style.width = `${ canvasWidth }px`
     canvas.style.height = `${ canvasWidth }px`
 
-    const pixelRatio = window.devicePixelRatio || 1
+    // Adjust the canvas size to match the device pixel ratio
     canvas.width = canvasWidth * pixelRatio
     canvas.height = canvasWidth * pixelRatio
-    context.scale(pixelRatio, pixelRatio)
+    canvasContext.scale(pixelRatio, pixelRatio)
 
-    tileSize = (canvasWidth - options.gap * (size + 1)) / size
+    // Draw the background
+    backgroundCanvasContext.fillStyle = options.backgroundColor
+    backgroundCanvasContext.fillRect(0, 0, canvas.width, canvas.height)
 
-    background = canvas.cloneNode() as HTMLCanvasElement
-    const backgroundContext = background.getContext('2d')!
+    options.tileSize = (canvasWidth - options.tileGap * (options.gridSize + 1)) / options.gridSize
 
-    backgroundContext.fillStyle = options.backgroundColor
-    backgroundContext.fillRect(0, 0, canvas.width, canvas.height)
+    // Draw the empty tiles
+    for (let row = 0; row < options.gridSize; row++) {
+      for (let column = 0; column < options.gridSize; column++) {
+        drawTileShape(column, row, options.emptyTileBackgroundColor, backgroundCanvasContext)
 
-    backgroundContext.fillStyle = options.emptyTileColor
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        drawTile(x, y, backgroundContext)
-        backgroundContext.strokeStyle = options.emptyTileBorderColor
-        backgroundContext.stroke()
+        backgroundCanvasContext.strokeStyle = options.emptyTileBorderColor
+        backgroundCanvasContext.stroke()
       }
     }
 
-    draw()
+    drawAnimatedGrid()
   }
 
-  resize()
-
-  return {
-    /**
-     * Animates the tiles on the canvas to their new positions.
-     * @since 1.0.0
-     * @version 1.0.0
-     *
-     * @returns {Promise<void>} A promise that resolves when the animation is complete.
-     */
-    animateMove: (): Promise<void> => animate(draw),
-    animateTile,
-    /**
-     * Resets the canvas with the given tiles.
-     * @since 1.0.0
-     * @version 1.0.0
-     *
-     * @param {Tile[]} tiles The tiles to draw on the canvas.
-     */
-    reset: (tiles: Tile[]): Promise<void> => {
-      clear()
-      return animateTile(tiles)
-    },
-    resize,
-  }
+  return { animateTileEntry, animateGridMovement, initializeWithTiles, adjustCanvasSize }
 }
