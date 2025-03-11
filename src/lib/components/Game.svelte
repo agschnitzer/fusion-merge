@@ -13,16 +13,39 @@
   let canvas: CanvasState, element: HTMLCanvasElement
 
   /**
-   * It determines which direction to move the tiles based on the key that is pressed. It updates the state and animates the canvas
-   * if any tiles are moved. It then adds a new tile to the grid and draws it on the canvas.
-   *
-   * @summary Handles the keydown event.
+   * Initializes the game by creating a grid and setting up the canvas.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const initializeGame = (): void => {
+    state.initializeGrid()
+    canvas = createCanvas(element, state.grid)
+    canvas.adjustCanvasSize()
+  }
+
+  /**
+   * Resets the game by clearing the grid and reinitializing it with new tiles.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {KeyboardEvent} event The keydown event.
+   * @returns {Promise<void>} A promise that resolves when the game is reset.
    */
-  const handleKeyPress = async (event: KeyboardEvent): Promise<void> => {
+  const resetGame = async (): Promise<void> => {
+    const tiles = state.resetGrid()
+    state.saveGrid()
+
+    await canvas.initializeWithTiles(tiles)
+  }
+
+  /**
+   * Handles the movement of tiles in the game based on keyboard input.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {KeyboardEvent} event The keyboard event triggered by the user.
+   * @returns {Promise<void>} A promise that resolves when the tile movement is completed.
+   */
+  const handleGameMovement = async (event: KeyboardEvent): Promise<void> => {
     if (state.isGameOver) return
 
     const directions: Record<string, Direction> = {
@@ -44,35 +67,17 @@
     state.saveGrid()
   }
 
-  /**
-   * Resets the game state and redraws the canvas.
-   * @since 1.0.0
-   * @version 1.0.0
-   *
-   * @returns {Promise<void>} A promise that resolves when the reset is complete.
-   */
-  const reset = async (): Promise<void> => {
-    const tiles = state.resetGrid()
-    state.saveGrid()
-
-    await canvas.initializeWithTiles(tiles)
-  }
-
-  $effect(() => {
-    state.initializeGrid()
-    canvas = createCanvas(element, state.grid)
-    canvas.adjustCanvasSize()
-  })
+  $effect(initializeGame)
 </script>
 
-<svelte:window onkeydown={handleKeyPress} onresize={() => canvas.adjustCanvasSize()}/>
+<svelte:window onkeydown={handleGameMovement} onresize={() => canvas.adjustCanvasSize()}/>
 
 <div class="w-fit mx-auto">
   <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px"
           class="w-[var(--initialWidth)] aspect-square mb-4 bg-main rounded-xl"></canvas>
   <div class="flex flex-col xs:flex-row justify-between gap-4">
-    <Score score={state.score} bestScore={state.highScore} />
-    <Controls {reset}/>
+    <Score {...state} />
+    <Controls onclick={resetGame}/>
   </div>
   {#if state.isGameOver}
     <p class="py-2 font-medium text-lg text-center">Game Over</p>
