@@ -1,5 +1,5 @@
 import { createGrid } from '$lib/core/grid.svelte'
-import * as storage from '$lib/core/storage'
+import * as storage from '$lib/helpers/storage'
 import type { Direction, GridState } from '$lib/types/grid.type'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
