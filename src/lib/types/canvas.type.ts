@@ -1,51 +1,80 @@
 import type { Tile } from '$lib/types/grid.type'
 
 /**
- * Represents the state of the canvas.
+ * Represents a canvas state for a game.
  * @since 1.0.0
  * @version 1.0.0
  *
  * @interface CanvasState
- * @property {() => Promise<void>} animateMove Animates the tiles on the canvas to their new positions.
- * @property {(tile: Tile | Tile[]) => Promise<void>} animateTile Animates the given tile(s) on the canvas.
- * @property {(tiles: Tile[]) => Promise<void>} reset Resets the canvas with the given tiles.
- * @property {() => void} resize Resizes the canvas to fit the window.
  */
 export interface CanvasState {
-  animateMove: () => Promise<void>
-  animateTile: (tile: Tile | Tile[]) => Promise<void>
-  reset: (tiles: Tile[]) => Promise<void>
-  resize: () => void
+  /**
+   * Animates the entry of a tile or tiles into the canvas.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {Tile | Tile[]} tile The tile or tiles to animate.
+   * @returns {Promise<void>} A promise that resolves when the animation is complete.
+   */
+  animateTileEntry: (tile: Tile | Tile[]) => Promise<void>
+  /**
+   * Animates the movement of the grid.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @returns {Promise<void>} A promise that resolves when the animation is complete.
+   */
+  animateGridMovement: () => Promise<void>
+  /**
+   * Initializes the canvas with the given tiles.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {Tile[]} tiles The tiles to draw on the canvas.
+   */
+  initializeWithTiles: (tiles: Tile[]) => Promise<void>
+  /**
+   * Adjusts the canvas size based on the current window size.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  adjustCanvasSize: () => void
 }
 
 /**
- * Represents the options for the canvas.
+ * Represents options for a canvas state.
  * @since 1.0.0
  * @version 1.0.0
  *
  * @interface CanvasOptions
- * @property {number} gap The gap between tiles.
- * @property {number} borderRadius The border radius of the tiles.
- * @property {number} animationDuration The duration of the animation in milliseconds.
- * @property {number} scaleFactor The scale factor for the tiles.
- * @property {string} backgroundColor The background colour of the canvas.
- * @property {string} emptyTileColor The background colour of empty tiles.
- * @property {string} emptyTileBorderColor The border colour of empty tiles.
- * @property {string} textColor The text colour of the tiles.
- * @property {string[]} atoms The list of atoms used in the game.
- * @property {string[]} atomColors The list of colours for the atoms.
- * @property {string[]} atomTextColors The list of text colours for the atoms.
  */
 export interface CanvasOptions {
-  gap: number
-  borderRadius: number
+  /** The width of the canvas in pixels. */
+  canvasWidth: number
+  /** The duration of the animation in milliseconds. */
   animationDuration: number
-  scaleFactor: number
+  /** The scale factor for the pulse animation. */
+  pulseScaleFactor: number
+  /** The number of tiles in the grid. */
+  gridSize: number
+  /** The size of each tile in pixels. */
+  tileSize: number
+  /** The gap between tiles in pixels. */
+  tileGap: number
+  /** The border radius of tiles in pixels. */
+  tileBorderRadius: number
+  /** The colour of the grid background. */
   backgroundColor: string
-  emptyTileColor: string
+  /** The background colour of empty tiles. */
+  emptyTileBackgroundColor: string
+  /** The border colour of empty tiles. */
   emptyTileBorderColor: string
-  textColor: string
-  atoms: string[]
-  atomColors: string[]
+  /** The text colour of tiles. */
+  defaultTextColor: string
+  /** Array of atom symbols. */
+  atomSymbols: string[]
+  /** Array of atom background colours. */
+  atomTileBackgroundColors: string[]
+  /** Array of atom text colours. */
   atomTextColors: string[]
 }
