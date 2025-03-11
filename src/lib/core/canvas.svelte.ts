@@ -151,11 +151,11 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid, width: numbe
         const tile = grid[i][j]
         if (!tile) continue
 
-        const { x, y, value, merged } = tile
-        const xPos = x + (j - x) * t
-        const yPos = y + (i - y) * t
+        const { column, row, value, mergedThisTurn } = tile
+        const xPos = column + (j - column) * t
+        const yPos = row + (i - row) * t
 
-        merged ? drawScaleTile(xPos, yPos, value, 1 + options.scaleFactor * Math.sin(Math.PI * t)) : drawGameTile(xPos, yPos, value)
+        mergedThisTurn ? drawScaleTile(xPos, yPos, value, 1 + options.scaleFactor * Math.sin(Math.PI * t)) : drawGameTile(xPos, yPos, value)
       }
     }
   }
@@ -203,8 +203,8 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid, width: numbe
   const animateTile = (tile: Tile | Tile[]): Promise<void> => animate(t => {
     const tiles = Array.isArray(tile) ? tile : [tile]
 
-    tiles.forEach(({ x, y, value }) =>
-        drawScaleTile(x, y, value, 0.5 + 0.5 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
+    tiles.forEach(({ column, row, value }) =>
+        drawScaleTile(column, row, value, 0.5 + 0.5 * t + options.scaleFactor * Math.sin(Math.PI * t) * (1 - t)))
   })
 
   /**

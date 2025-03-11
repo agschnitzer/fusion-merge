@@ -1,5 +1,5 @@
 import { browser } from '$app/environment'
-import type { SaveGameState } from '$lib/types/grid.type'
+import type { GameState } from '$lib/types/grid.type'
 
 /**
  * Encodes a string using Base64 encoding.
@@ -27,9 +27,9 @@ const decode = (str: string): string => atob(str)
  * @version 1.0.0
  *
  * @param {string} key The key to load the game state from local storage.
- * @returns {SaveGameState | null} The loaded game state or null if not found.
+ * @returns {GameState | null} The loaded game state or null if not found.
  */
-export const loadGameState = (key: string): SaveGameState | null => {
+export const loadGameState = (key: string): GameState | null => {
   if (!browser) return null
 
   const state = localStorage.getItem(key)
@@ -42,9 +42,9 @@ export const loadGameState = (key: string): SaveGameState | null => {
  * @version 1.0.0
  *
  * @param {string} key The key to save the game state to local storage.
- * @param {SaveGameState} state The game state to save.
+ * @param {GameState} state The game state to save.
  */
-export const saveGameState = (key: string, state: SaveGameState): void => {
+export const saveGameState = (key: string, state: GameState): void => {
   if (!browser) return
 
   localStorage.setItem(key, encode(JSON.stringify(state)))

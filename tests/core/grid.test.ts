@@ -27,8 +27,8 @@ describe('createGrid()', () => {
 
   it('should move tiles in the specified direction', () => {
     state.grid = [
-      [{ value: 1, x: 0, y: 0 }, null, null, null],
-      [null, { value: 3, x: 1, y: 1 }, null, null],
+      [{ value: 1, column: 0, row: 0 }, null, null, null],
+      [null, { value: 3, column: 1, row: 1 }, null, null],
       [null, null, null, null],
       [null, null, null, null],
     ]
@@ -45,7 +45,7 @@ describe('createGrid()', () => {
 
   it('should merge tiles of the same value', () => {
     state.grid = [
-      [{ value: 1, x: 0, y: 0 }, { value: 1, x: 1, y: 0 }, null, null],
+      [{ value: 1, column: 0, row: 0 }, { value: 1, column: 1, row: 0 }, null, null],
       [null, null, null, null],
       [null, null, null, null],
       [null, null, null, null],
@@ -61,13 +61,13 @@ describe('createGrid()', () => {
 
   it('should add a random tile after moving', () => {
     state.grid = [
-      [{ value: 2, x: 0, y: 0 }, null, null, null],
+      [{ value: 2, column: 0, row: 0 }, null, null, null],
       [null, null, null, null],
       [null, null, null, null],
       [null, null, null, null],
     ]
 
-    state.addRandomTile()
+    state.addTile()
 
     // Count non-null cells, should be 2 now
     const nonEmptyCount = state.grid.flat().filter(cell => cell !== null).length
@@ -76,10 +76,10 @@ describe('createGrid()', () => {
 
   it('should detect game over correctly', () => {
     state.grid = [
-      [{ value: 2, x: 0, y: 0 }, { value: 3, x: 1, y: 0 }, { value: 2, x: 2, y: 0 }, { value: 3, x: 3, y: 0 }],
-      [{ value: 3, x: 0, y: 1 }, { value: 2, x: 1, y: 1 }, { value: 3, x: 2, y: 1 }, { value: 2, x: 3, y: 1 }],
-      [{ value: 2, x: 0, y: 2 }, { value: 3, x: 1, y: 2 }, { value: 2, x: 2, y: 2 }, { value: 3, x: 3, y: 2 }],
-      [{ value: 3, x: 0, y: 3 }, { value: 2, x: 1, y: 3 }, { value: 3, x: 2, y: 3 }, { value: 2, x: 3, y: 3 }],
+      [{ value: 2, column: 0, row: 0 }, { value: 3, column: 1, row: 0 }, { value: 2, column: 2, row: 0 }, { value: 3, column: 3, row: 0 }],
+      [{ value: 3, column: 0, row: 1 }, { value: 2, column: 1, row: 1 }, { value: 3, column: 2, row: 1 }, { value: 2, column: 3, row: 1 }],
+      [{ value: 2, column: 0, row: 2 }, { value: 3, column: 1, row: 2 }, { value: 2, column: 2, row: 2 }, { value: 3, column: 3, row: 2 }],
+      [{ value: 3, column: 0, row: 3 }, { value: 2, column: 1, row: 3 }, { value: 3, column: 2, row: 3 }, { value: 2, column: 3, row: 3 }],
     ]
 
     // Try moving in all directions to trigger game over check
@@ -88,21 +88,21 @@ describe('createGrid()', () => {
     state.moveTiles('up')
     state.moveTiles('down')
 
-    expect(state.gameOver).toBe(true)
+    expect(state.isGameOver).toBe(true)
   })
 
   it('should reset the grid to initial state', () => {
     state.grid = [
-      [{ value: 1, x: 0, y: 0 }, null, null, null],
-      [null, { value: 3, x: 1, y: 1 }, null, null],
+      [{ value: 1, column: 0, row: 0 }, null, null, null],
+      [null, { value: 3, column: 1, row: 1 }, null, null],
       [null, null, null, null],
       [null, null, null, null],
     ]
 
     // Reset the grid
-    state.reset()
+    state.resetGrid()
 
-    expect(state.gameOver).toBe(false)
+    expect(state.isGameOver).toBe(false)
     expect(state.score).toBe(0)
 
     const nonEmptyCount = state.grid.flat().filter(cell => cell !== null).length
