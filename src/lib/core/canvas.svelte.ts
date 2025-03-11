@@ -11,7 +11,7 @@ import type { Grid, Tile } from '$lib/types/grid.type'
  * @returns {CanvasState} A canvas state object.
  */
 export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState => {
-  const tileGap = 10
+  const tileGap = canvas.width / grid.length * 0.08
   const options: CanvasOptions = {
     canvasWidth: canvas.width,
     animationDuration: 120,
