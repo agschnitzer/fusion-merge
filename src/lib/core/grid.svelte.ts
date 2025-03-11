@@ -17,8 +17,8 @@ export const createGrid = (size: number): GridState => {
   let isGameOver = $state(false)
   let moveCount = $state(0)
 
-  let grid: Grid
-  let emptyTilePositions: EmptyTilePositions
+  let grid: Grid = Array.from({ length: size }, () => Array(size).fill(null))
+  let emptyTilePositions: EmptyTilePositions = {}
 
   /**
    * Updates the positions of the tiles in the grid.
