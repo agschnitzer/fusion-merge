@@ -23,7 +23,7 @@
    * @param {KeyboardEvent} event The keydown event.
    */
   const handleKeyPress = async (event: KeyboardEvent): Promise<void> => {
-    if (state.gameOver) return
+    if (state.isGameOver) return
 
     const directions: Record<string, Direction> = {
       ArrowUp: 'up',
@@ -38,10 +38,10 @@
 
     await canvas.animateMove()
 
-    const tile = state.addRandomTile()
+    const tile = state.addTile()
     await canvas.animateTile(tile)
 
-    state.save()
+    state.saveGrid()
   }
 
   /**
@@ -52,12 +52,14 @@
    * @returns {Promise<void>} A promise that resolves when the reset is complete.
    */
   const reset = async (): Promise<void> => {
-    const tiles = state.reset()
+    const tiles = state.resetGrid()
+    state.saveGrid()
+
     await canvas.reset(tiles)
   }
 
   $effect(() => {
-    state.init()
+    state.initializeGrid()
     canvas = createCanvas(element, state.grid, width)
   })
 </script>
@@ -68,10 +70,10 @@
   <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px"
           class="w-[var(--initialWidth)] aspect-square mb-4 bg-main rounded-xl"></canvas>
   <div class="flex flex-col xs:flex-row justify-between gap-4">
-    <Score score={state.score} bestScore={state.bestScore} />
+    <Score score={state.score} bestScore={state.highScore} />
     <Controls {reset}/>
   </div>
-  {#if state.gameOver}
+  {#if state.isGameOver}
     <p class="py-2 font-medium text-lg text-center">Game Over</p>
   {/if}
 </div>

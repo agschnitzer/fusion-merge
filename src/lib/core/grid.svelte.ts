@@ -1,5 +1,5 @@
 import { encode, loadGameState, saveGameState } from '$lib/core/storage'
-import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/grid.type'
+import type { Direction, EmptyTilePositions, Grid, GridState, Tile } from '$lib/types/grid.type'
 
 /**
  * Creates a new grid with the specified size.
@@ -7,284 +7,260 @@ import type { Direction, EmptyTiles, Grid, GridState, Tile } from '$lib/types/gr
  * @version 1.0.0
  *
  * @param {number} size The size of the grid.
- * @returns {GridState} An object representing the grid state.
+ * @returns {GridState} An object representing the grid of tiles, score, high score, game over status, and move count.
  */
 export const createGrid = (size: number): GridState => {
   const SAVE_KEY = encode('fusion_merge_state')
 
   let score = $state(0)
-  let bestScore = $state(0)
-  let gameOver = $state(false)
-  let moves = $state(0)
+  let highScore = $state(0)
+  let isGameOver = $state(false)
+  let moveCount = $state(0)
 
-  let grid: Grid = Array.from({ length: size }, () => Array(size).fill(null))
-  let emptyTiles: EmptyTiles = {}
-
+  let grid: Grid
+  let emptyTilePositions: EmptyTilePositions
 
   /**
-   * Adds a tile on the grid at a random position.
+   * Updates the positions of the tiles in the grid.
+   * @since 1.0.0
+   * @version 1.0.0
+   * @private
+   *
+   * @param {number} fromRow The row of the tile being moved.
+   * @param {number} fromCol The column of the tile being moved.
+   * @param {number} toRow The row of the tile being moved to.
+   * @param {number} toCol The column of the tile being moved to.
+   * @returns {boolean} `true` indicating that the tile was moved.
+   */
+  const updateTilePositions = (fromRow: number, fromCol: number, toRow: number, toCol: number): true => {
+    grid[fromRow][fromCol] = null
+
+    emptyTilePositions[`${ fromRow }${ fromCol }`] = { row: fromRow, column: fromCol }
+    delete emptyTilePositions[`${ toRow }${ toCol }`]
+
+    return true
+  }
+
+  /**
+   * Maps the position of a tile based on the direction of movement.
+   * @since 1.0.0
+   * @version 1.0.0
+   * @private
+   *
+   * @param {boolean} isHorizontal `true` if the movement is horizontal, `false` if vertical.
+   * @param {number} fixedAxis The fixed axis (row or column).
+   * @param {number} variableAxis The variable axis (column or row).
+   * @returns {[row: number, column: number]} A tuple representing the mapped coordinates.
+   */
+  const mapPositionByDirection = (isHorizontal: boolean, fixedAxis: number, variableAxis: number): [row: number, column: number] =>
+      isHorizontal ? [fixedAxis, variableAxis] : [variableAxis, fixedAxis]
+
+  /**
+   * Adds a new tile to the grid.
    * @since 1.0.0
    * @version 1.0.0
    *
    * @returns {Tile} The tile that was added.
    */
-  const addRandomTile = (): Tile => {
-    let key: string | null = null
-    let count = 0
+  const addTile = (): Tile => {
+    const emptyPositions = Object.keys(emptyTilePositions)
+    const key = emptyPositions[Math.floor(Math.random() * emptyPositions.length)]
 
-    for (const tile in emptyTiles) {
-      if (Math.random() < 1 / ++count) key = tile
+    const { column, row } = emptyTilePositions[key]
+    delete emptyTilePositions[key]
+
+    const tile: Tile = {
+      value: Math.random() < 0.75 ? 1 : 2,
+      row,
+      column,
+      mergedThisTurn: false,
     }
 
-    const { x, y } = emptyTiles[key!]
-    grid[y][x] = { value: Math.random() < 0.9 ? 1 : 2, x, y, merged: false }
-
-    delete emptyTiles[key!]
-
-    return grid[y][x]
+    grid[row][column] = tile
+    return tile
   }
 
   /**
-   * Tracks the tile update by keeping the grid and empty tiles in sync.
+   * Initializes the grid with a specified number of tiles.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {number} oldX The x coordinate of the empty tile.
-   * @param {number} oldY The y coordinate of the empty tile.
-   * @param {number} newX The x coordinate of the tile that was moved or merged.
-   * @param {number} newY The y coordinate of the tile that was moved or merged.
-   * @returns {Tile} The tile that was moved or merged.
+   * @param {boolean} [reset = false] `true` to reset the grid, `false` to load the saved state.
+   * @returns {Tile[]} An array of tiles added to the grid.
    */
-  const trackTileUpdate = (oldX: number, oldY: number, newX: number, newY: number): Tile => {
-    grid[oldY][oldX] = null
-
-    emptyTiles[`${ oldY }${ oldX }`] = { x: oldX, y: oldY }
-    delete emptyTiles[`${ newY }${ newX }`]
-
-    return grid[newY][newX]!
-  }
-
-  /**
-   * Maps coordinates based on the movement direction.
-   * @since 1.0.0
-   * @version 1.0.0
-   *
-   * @param {boolean} isHorizontal `true` if the movement is horizontal, `false` otherwise.
-   * @param {number} fixedAxis The fixed coordinate (row for horizontal, column for vertical).
-   * @param {number} variableAxis The changing coordinate (column for horizontal, row for vertical).
-   * @returns {[number, number]} A tuple containing the new coordinates.
-   */
-  const mapPositionByDirection = (isHorizontal: boolean, fixedAxis: number, variableAxis: number): [number, number] =>
-      isHorizontal ? [fixedAxis, variableAxis] : [variableAxis, fixedAxis]
-
-  /**
-   * Checks if any tiles can be merged.
-   * @since 1.0.0
-   * @version 1.0.0
-   *
-   * @returns {boolean} `true` if any tiles can be merged, `false` otherwise.
-   */
-  const hasPossibleMerges = (): boolean => {
-    for (let y = 0; y < grid.length; y++) {
-      for (let x = 0; x < grid.length; x++) {
-        // Check if any neighbouring tiles can be merged
-        if ((x < grid.length - 1 && grid[y][x] && grid[y][x + 1] && grid[y][x]?.value === grid[y][x + 1]?.value) ||
-            (y < grid.length - 1 && grid[y][x] && grid[y + 1][x] && grid[y][x]?.value === grid[y + 1][x]?.value)) {
-          return true
-        }
-      }
-    }
-
-    return false
-  }
-
-  /**
-   * Saves the game state to local storage.
-   * @since 1.0.0
-   * @version 1.0.0
-   */
-  const save = (): void => saveGameState(SAVE_KEY, { score, bestScore, gameOver, moves, grid })
-
-  /**
-   * Initializes a new game or loads the state from local storage.
-   * @since 1.0.0
-   * @version 1.0.0
-   *
-   * @param {boolean} reset `true` to reset the game, `false` to load the saved state.
-   * @returns {Tile[]} An array of tiles that were added to the grid. Empty if loading saved state.
-   */
-  const init = (reset: boolean = false): Tile[] => {
+  const initializeGrid = (reset: boolean = false): Tile[] => {
+    // Load the saved game state
     if (!reset) {
-      const savedState = loadGameState(SAVE_KEY)
+      const gameState = loadGameState(SAVE_KEY)
 
-      if (savedState) {
-        score = savedState.score
-        gameOver = savedState.gameOver
-        moves = savedState.moves
-        grid = savedState.grid
-        bestScore = savedState.bestScore
-
+      if (gameState) {
+        ({ grid, score, highScore, isGameOver, moveCount } = gameState)
         return []
       }
     }
 
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        grid[y][x] = null
-        emptyTiles[`${ y }${ x }`] = { x, y }
+    emptyTilePositions = {}
+    for (let row = 0; row < size; row++) {
+      for (let column = 0; column < size; column++) {
+        grid[row][column] = null
+        emptyTilePositions[`${ row }${ column }`] = { row, column }
       }
     }
 
-    // Add two random tiles to start the game
-    const tile1 = addRandomTile()
-    const tile2 = addRandomTile()
-
-    save()
-
-    return [tile1, tile2]
-  }
-
-  /**
-   * Resets the grid to its initial state.
-   * @since 1.0.0
-   * @version 1.0.0
-   *
-   * @returns {Tile[]} An array of two tiles that were added to the grid.
-   */
-  const reset = (): Tile[] => {
-    score = 0
-    moves = 0
-    gameOver = false
-
-    return init(true)
+    return Array.from({ length: 2 }, addTile)
   }
 
   return {
     /**
-     * Returns the grid.
+     * Returns the grid of tiles.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @returns {Grid} A two-dimensional array representing the grid.
+     * @returns {Grid} A two-dimensional array of tiles.
      */
     get grid(): Grid { return grid },
     /**
-     * Sets the grid to a new state.
+     * Sets the grid of tiles.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @param {Grid} newGrid The new grid state.
+     * @param {Grid} _grid The new grid of tiles.
      */
-    set grid(newGrid: Grid) {grid = newGrid },
+    set grid(_grid: Grid) {grid = _grid },
     /**
      * Returns the current score.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @returns {number} The current score.
+     * @returns {number} A number representing the current score.
      */
     get score(): number { return score },
     /**
-     * Returns the best score.
+     * Returns the highest score achieved.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @returns {number} The best score.
+     * @returns {number} A number representing the highest score.
      */
-    get bestScore(): number { return bestScore },
+    get highScore(): number { return highScore },
     /**
-     * Returns the game over state.
+     * Returns the game over status.
      * @since 1.0.0
      * @version 1.0.0
      *
      * @returns {boolean} `true` if the game is over, `false` otherwise.
      */
-    get gameOver(): boolean { return gameOver },
+    get isGameOver(): boolean { return isGameOver },
     /**
      * Returns the number of moves made.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @returns {number} The number of moves made.
+     * @returns {number} A number representing the number of moves made.
      */
-    get moves(): number { return moves },
+    get moveCount(): number { return moveCount },
+    addTile,
     /**
      * Moves the tiles in the specified direction.
      * @since 1.0.0
      * @version 1.0.0
      *
-     * @param {Direction} direction The direction to move the tiles.
+     * @param {Direction} direction The direction to move the tiles, e.g. `up`, `down`, `left`, or `right`.
      * @returns {boolean} `true` if any tiles were moved, `false` otherwise.
      */
     moveTiles: (direction: Direction): boolean => {
-      let moved = false
+      let hasMoved = false
+      const iterateReversed = direction === 'down' || direction === 'right'
+      const iterateHorizontally = direction === 'left' || direction === 'right'
+      const iterationStep = iterateReversed ? -1 : 1
 
-      const isReverse = direction === 'down' || direction === 'right'
-      const isHorizontal = direction === 'left' || direction === 'right'
-
-      const start = isReverse ? size - 1 : 0
-      const end = isReverse ? 0 : size
-      const step = isReverse ? -1 : 1
-
-      emptyTiles = {}
+      emptyTilePositions = {}
       for (let i = 0; i < size; i++) {
-        let nextPosition = start
+        let nextPosition = iterateReversed ? size - 1 : 0
 
-        // Iterate over the row or column based on the direction of the move
-        for (let j = start; isReverse ? j >= end : j < end; j += step) {
-          const row = isHorizontal ? i : j
-          const col = isHorizontal ? j : i
+        for (let j = nextPosition; iterateReversed ? j >= 0 : j < size; j += iterationStep) {
+          const row = iterateHorizontally ? i : j
+          const column = iterateHorizontally ? j : i
+          const tile = grid[row][column]
 
-          const tile = grid[row][col]
-
-          // Skip empty tiles
           if (!tile) {
-            emptyTiles[`${ row }${ col }`] = { x: col, y: row }
+            emptyTilePositions[`${ row }${ column }`] = { row, column }
             continue
           }
 
-          // Save the tile position for animation
-          Object.assign(tile, { y: row, x: col, merged: false })
+          // Assign the original position to correctly animate the movement
+          Object.assign(tile, { row, column, mergedThisTurn: false } as Tile)
 
-          const [newRow, newCol] = mapPositionByDirection(isHorizontal, i, nextPosition)
-          const [targetRow, targetCol] = mapPositionByDirection(isHorizontal, i, nextPosition - step)
+          const [moveToRow, moveToCol] = mapPositionByDirection(iterateHorizontally, i, nextPosition)
+          const [mergeCheckRow, mergeCheckCol] = mapPositionByDirection(iterateHorizontally, i, nextPosition - iterationStep)
+          const adjacentTile = grid[mergeCheckRow]?.[mergeCheckCol] ?? null
 
-          const targetTile = targetRow >= 0 && targetCol >= 0 && targetRow < size && targetCol < size ?
-              grid[targetRow][targetCol] : null
-
-          // Move the tile to the new position
-          if (nextPosition !== j) {
-            grid[newRow][newCol] = tile
-            trackTileUpdate(col, row, newCol, newRow)
-            moved = true
+          if (j !== nextPosition) {
+            grid[moveToRow][moveToCol] = tile
+            hasMoved = updateTilePositions(row, column, moveToRow, moveToCol)
           }
 
-          if (!!targetTile && !targetTile.merged && tile.value === targetTile.value) {
-            targetTile.value += 1
+          // Skip incrementing the next position if the tile is merged
+          if (adjacentTile?.value === tile.value && !adjacentTile.mergedThisTurn) {
+            adjacentTile.value += 1
 
-            score += targetTile.value * targetTile.value
-            bestScore = Math.max(score, bestScore)
+            score += Math.pow(2, adjacentTile.value)
+            highScore = Math.max(score, highScore)
 
-            trackTileUpdate(newCol, newRow, targetCol, targetRow)
-            grid[targetRow][targetCol]!.merged = true
+            hasMoved = updateTilePositions(moveToRow, moveToCol, mergeCheckRow, mergeCheckCol)
+            grid[mergeCheckRow][mergeCheckCol]!.mergedThisTurn = true
 
-            moved = true
             continue
           }
 
-          nextPosition += step
+          nextPosition += iterationStep
         }
       }
 
-      if (!Object.keys(emptyTiles).length) gameOver = !hasPossibleMerges()
+      // Check if the game is over when there are no empty tiles left
+      if (!Object.keys(emptyTilePositions).length) {
+        isGameOver = true
 
-      if (moved) moves++
+        for (let row = 0; row < size; row++) {
+          for (let column = 0; column < size; column++) {
+            const tile = grid[row][column]
+            const boundary = size - 1
 
-      return moved
+            // Check if the tile can be merged with its right or bottom neighbour
+            if (tile && ((column < boundary && grid[row][column + 1]?.value === tile.value) ||
+                (row < boundary && grid[row + 1][column]?.value === tile.value))) {
+              isGameOver = false
+              break
+            }
+          }
+
+          if (!isGameOver) break
+        }
+      }
+
+      moveCount += Number(hasMoved)
+      return hasMoved
     },
-    addRandomTile,
-    init,
-    reset,
-    save,
+    initializeGrid,
+    /**
+     * Resets the grid to its initial state with two random tiles.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @returns {Tile[]} An array of tiles added to the grid.
+     */
+    resetGrid: (): Tile[] => {
+      score = 0
+      moveCount = 0
+      isGameOver = false
+
+      return initializeGrid(true)
+    },
+    /**
+     * Saves the current state of the grid.
+     * @since 1.0.0
+     * @version 1.0.0
+     */
+    saveGrid: (): void => saveGameState(SAVE_KEY, { grid, score, highScore, isGameOver, moveCount }),
   }
 }
