@@ -9,20 +9,20 @@ import type { Direction } from '$lib/types/grid.type'
  */
 export interface InputController {
   /**
-   * Updates the starting position of a touch event.
+   * Updates the starting position of a pointer event.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {TouchEvent} event The start touch event.
+   * @param {PointerEvent} event The start pointer event.
    */
-  updateTouchStartPosition: (event: TouchEvent) => void
+  updatePointerStartPosition: (event: PointerEvent) => void
   /**
-   * Determines the direction of movement based on a keyboard or touch event.
+   * Determines the direction of movement based on a keyboard or pointer event.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {KeyboardEvent | TouchEvent} event The keyboard or touch event.
+   * @param {KeyboardEvent | PointerEvent} event The keyboard or pointer event.
    * @returns {Direction | null} A direction string ('up', 'down', 'left', 'right') or null if no valid direction is detected.
    */
-  getMoveDirection: (event: KeyboardEvent | TouchEvent) => Direction | null
+  getMoveDirection: (event: KeyboardEvent | PointerEvent) => Direction | null
 }

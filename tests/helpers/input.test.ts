@@ -1,25 +1,26 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createInputController } from '$lib/helpers/input'
 
-const { updateTouchStartPosition, getMoveDirection } = createInputController()
+const { updatePointerStartPosition, getMoveDirection } = createInputController()
 
 /**
- * Creates a mock touch event for testing.
+ * Creates a mock pointer event for testing.
  * @since 1.0.0
  * @version 1.0.0
  *
- * @param {number} x The x-coordinate of the touch event.
- * @param {number} y The y-coordinate of the touch event.
- * @returns {TouchEvent} A mock touch event object.
+ * @param {number} x The x-coordinate of the pointer event.
+ * @param {number} y The y-coordinate of the pointer event.
+ * @param {string} pointerType The pointer type ('touch', 'mouse', etc).
+ * @param {number} button The button used (0 for left click).
+ * @returns {PointerEvent} A mock pointer event object.
  */
-const createTouchEvent = (x: number, y: number): TouchEvent => {
-  const touch = { clientX: x, clientY: y } as Touch
-
-  return {
-    changedTouches: [touch],
-    preventDefault: () => { },
-  } as unknown as TouchEvent
-}
+const createPointerEvent = (x: number, y: number, pointerType: string = 'touch', button: number = 0): PointerEvent => ({
+  x,
+  y,
+  pointerType,
+  button,
+  preventDefault: () => { },
+} as unknown as PointerEvent)
 
 describe('getMoveDirection()', () => {
   it('should return correct direction for arrow keys', () => {
@@ -41,61 +42,66 @@ describe('getMoveDirection()', () => {
     expect(getMoveDirection(event)).toBeNull()
   })
 
-  describe('touch event handling', () => {
+  describe('pointer event handling', () => {
     beforeEach(() => {
-      const startEvent = createTouchEvent(100, 100)
-      updateTouchStartPosition(startEvent)
+      const startEvent = createPointerEvent(100, 100)
+      updatePointerStartPosition(startEvent)
     })
 
-    it('should update touch position correctly', () => {
-      const startEvent = createTouchEvent(200, 200)
-      updateTouchStartPosition(startEvent)
+    it('should update pointer position correctly for touch events', () => {
+      const startEvent = createPointerEvent(200, 200)
+      updatePointerStartPosition(startEvent)
 
-      // Swipe left from new position
-      const endEvent = createTouchEvent(150, 200)
+      const endEvent = createPointerEvent(150, 200)
       expect(getMoveDirection(endEvent)).toBe('left')
     })
 
+    it('should ignore non-touch pointer events', () => {
+      const mouseEvent = createPointerEvent(200, 200, 'mouse')
+      updatePointerStartPosition(mouseEvent)
+
+      const endEvent = createPointerEvent(150, 200, 'mouse')
+      expect(getMoveDirection(endEvent)).toBeNull()
+    })
+
     it('should detect right swipe', () => {
-      const endEvent = createTouchEvent(150, 100)
+      const endEvent = createPointerEvent(150, 100)
       expect(getMoveDirection(endEvent)).toBe('right')
     })
 
     it('should detect left swipe', () => {
-      const endEvent = createTouchEvent(50, 100)
+      const endEvent = createPointerEvent(50, 100)
       expect(getMoveDirection(endEvent)).toBe('left')
     })
 
     it('should detect up swipe', () => {
-      const endEvent = createTouchEvent(100, 50)
+      const endEvent = createPointerEvent(100, 50)
       expect(getMoveDirection(endEvent)).toBe('up')
     })
 
     it('should detect down swipe', () => {
-      const endEvent = createTouchEvent(100, 150)
+      const endEvent = createPointerEvent(100, 150)
       expect(getMoveDirection(endEvent)).toBe('down')
     })
 
     it('should return null for small movements below threshold', () => {
-      const endEvent = createTouchEvent(110, 105) // Small movement
+      const endEvent = createPointerEvent(110, 105) // Small movement
       expect(getMoveDirection(endEvent)).toBeNull()
     })
 
     it('should prioritize horizontal movement when it has greater magnitude', () => {
-      const endEvent = createTouchEvent(150, 120) // More horizontal than vertical
+      const endEvent = createPointerEvent(150, 120) // More horizontal than vertical
       expect(getMoveDirection(endEvent)).toBe('right')
     })
 
     it('should prioritize vertical movement when it has greater magnitude', () => {
-      const endEvent = createTouchEvent(120, 150) // More vertical than horizontal
+      const endEvent = createPointerEvent(120, 150) // More vertical than horizontal
       expect(getMoveDirection(endEvent)).toBe('down')
     })
 
-    it('should handle missing changedTouches gracefully', () => {
-      const badEvent = { changedTouches: [] } as unknown as TouchEvent
-      expect(getMoveDirection(badEvent)).toBeNull()
+    it('should return null for non-touch pointer events', () => {
+      const mouseEvent = createPointerEvent(150, 100, 'mouse')
+      expect(getMoveDirection(mouseEvent)).toBeNull()
     })
   })
 })
-
-

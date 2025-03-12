@@ -10,7 +10,7 @@
   let { width = 450, size = 4 } = $props()
 
   const state = createGrid(size)
-  const { updateTouchStartPosition, getMoveDirection } = createInputController()
+  const { updatePointerStartPosition, getMoveDirection } = createInputController()
   let canvas: CanvasState, element: HTMLCanvasElement
 
   /**
@@ -43,11 +43,11 @@
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {KeyboardEvent | TouchEvent} event The event triggered by the user input.
+   * @param {KeyboardEvent | PointerEvent} event The event triggered by the user input.
    * @returns {Promise<void>} A promise that resolves when the tile movement is completed.
    */
-  const handleGameMovement = async (event: KeyboardEvent | TouchEvent): Promise<void> => {
-    if (state.isGameOver) return
+  const handleGameMovement = async (event: KeyboardEvent | PointerEvent): Promise<void> => {
+    if (state.isGameOver || canvas.isAnimating) return
 
     const direction = getMoveDirection(event)
 
@@ -68,7 +68,7 @@
 <svelte:window onkeydown={handleGameMovement} onresize={() => canvas.adjustCanvasSize()}/>
 
 <div class="w-fit mx-auto">
-  <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px" ontouchstart={updateTouchStartPosition} ontouchend={handleGameMovement}
+  <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px" onpointerdown={updatePointerStartPosition} onpointermove={handleGameMovement}
           class="w-[var(--initialWidth)] aspect-square mb-4 bg-main rounded-xl touch-none"></canvas>
   <div class="flex flex-col xs:flex-row justify-between gap-4">
     <Score {...state} />

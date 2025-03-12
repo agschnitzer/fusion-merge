@@ -338,5 +338,18 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
     drawAnimatedGrid()
   }
 
-  return { animateTileEntry, animateGridMovement, initializeWithTiles, adjustCanvasSize }
+  return {
+    /**
+     * Indicates whether the canvas is currently animating.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @returns {boolean} `true` if the canvas is animating, `false` otherwise.
+     */
+    get isAnimating(): boolean { return !!animationFrameId },
+    animateTileEntry,
+    animateGridMovement,
+    initializeWithTiles,
+    adjustCanvasSize,
+  }
 }
