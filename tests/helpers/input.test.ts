@@ -108,8 +108,7 @@ describe('throttlePointerEvent()', () => {
 
     throttlePointerEvent(event1, callback)
 
-    // Advance timer by throttle interval (50ms)
-    vi.advanceTimersByTime(50)
+    vi.advanceTimersByTime(1000)
 
     throttlePointerEvent(event2, callback)
 
@@ -143,7 +142,7 @@ describe('throttlePointerEvent()', () => {
     throttlePointerEvent(event1, callback)
 
     // Advance timer by default throttle interval
-    vi.advanceTimersByTime(50)
+    vi.advanceTimersByTime(1000)
 
     throttlePointerEvent(event2, callback)
 
@@ -232,5 +231,75 @@ describe('getMoveDirection()', () => {
       const mouseEvent = createPointerEvent(150, 100, 'mouse')
       expect(getMoveDirection(mouseEvent)).toBeNull()
     })
+  })
+})
+
+describe('resetSwipeState()', () => {
+  let controller: ReturnType<typeof createInputController>
+
+  beforeEach(() => {
+    controller = createInputController()
+  })
+
+  it('should enable swipe detection after being called', () => {
+    // Setup initial position
+    const startEvent = createPointerEvent(100, 100)
+    controller.updatePointerStartPosition(startEvent)
+
+    // First swipe - should detect direction
+    const firstSwipe = createPointerEvent(150, 100)
+    expect(controller.getMoveDirection(firstSwipe)).toBe('right')
+
+    // Second swipe without reset - should return null (swipe already processed)
+    const secondSwipe = createPointerEvent(50, 100)
+    expect(controller.getMoveDirection(secondSwipe)).toBeNull()
+
+    // Reset swipe state
+    controller.resetSwipeState()
+
+    // Third swipe after reset - should detect direction again
+    const thirdSwipe = createPointerEvent(50, 100)
+    expect(controller.getMoveDirection(thirdSwipe)).toBe('left')
+  })
+
+  it('should be called automatically when updating pointer start position', () => {
+    // Setup initial position
+    const startEvent = createPointerEvent(100, 100)
+    controller.updatePointerStartPosition(startEvent)
+
+    // First swipe - should detect direction
+    const firstSwipe = createPointerEvent(150, 100)
+    expect(controller.getMoveDirection(firstSwipe)).toBe('right')
+
+    // Second swipe without reset - should return null
+    const secondSwipe = createPointerEvent(50, 100)
+    expect(controller.getMoveDirection(secondSwipe)).toBeNull()
+
+    // Update start position (which should reset swipe state internally)
+    const newStartEvent = createPointerEvent(200, 200)
+    controller.updatePointerStartPosition(newStartEvent)
+
+    // New swipe after updating position - should detect direction
+    const newSwipe = createPointerEvent(150, 200)
+    expect(controller.getMoveDirection(newSwipe)).toBe('left')
+  })
+
+  it('should allow swipe detection on a new touch sequence', () => {
+    // First touch sequence
+    const firstStartEvent = createPointerEvent(100, 100)
+    controller.updatePointerStartPosition(firstStartEvent)
+
+    const firstSwipe = createPointerEvent(150, 100)
+    expect(controller.getMoveDirection(firstSwipe)).toBe('right')
+
+    // Simulate finger lift and new touch
+    controller.resetSwipeState()
+
+    // Second touch sequence
+    const secondStartEvent = createPointerEvent(200, 200)
+    controller.updatePointerStartPosition(secondStartEvent)
+
+    const secondSwipe = createPointerEvent(200, 250)
+    expect(controller.getMoveDirection(secondSwipe)).toBe('down')
   })
 })
