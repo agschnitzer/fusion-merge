@@ -108,3 +108,17 @@ export interface Tile {
   /** `true` if the tile has been merged this turn, `false` otherwise. */
   mergedThisTurn: boolean
 }
+
+/**
+ * Represents coordinates on the screen or grid.
+ * @since 1.0.0
+ * @version 1.0.0
+ *
+ * @interface Coordinates
+ */
+export interface Coordinates {
+  /** The position on the x-axis. */
+  x: number
+  /** The position on the y-axis. */
+  y: number
+}
