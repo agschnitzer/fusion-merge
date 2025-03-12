@@ -26,6 +26,8 @@ export const createInputController = (): InputController => {
    * @param {TouchEvent} event The start touch event.
    */
   const updateTouchStartPosition = (event: TouchEvent): void => {
+    event.preventDefault()
+
     const touch = event.changedTouches?.[0]
     if (!touch) return
 
@@ -51,7 +53,7 @@ export const createInputController = (): InputController => {
     const yDiff = touch.clientY - touchPosition.y
     const absXDiff = Math.abs(xDiff)
     const absYDiff = Math.abs(yDiff)
-    
+
     if (absXDiff > absYDiff) return absXDiff >= minSwipeDistance ? (xDiff > 0 ? 'right' : 'left') : null
     return absYDiff >= minSwipeDistance ? (yDiff > 0 ? 'down' : 'up') : null
   }
