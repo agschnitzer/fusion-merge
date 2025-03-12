@@ -24,7 +24,7 @@ const config = defineConfig({
       extends: './vite.config.ts',
       test: {
         name: 'server',
-        environment: 'node',
+        environment: 'jsdom',
         include: ['tests/**/*.{test,spec}.{js,ts}'],
         exclude: ['tests/**/*.svelte.{test,spec}.{js,ts}'],
       },
