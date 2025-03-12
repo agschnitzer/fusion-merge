@@ -10,7 +10,7 @@ import type { Direction, EmptyTilePositions, Grid, GridState, Tile } from '$lib/
  * @returns {GridState} An object representing the grid of tiles, score, high score, game over status, and move count.
  */
 export const createGrid = (size: number): GridState => {
-  const SAVE_KEY = encode('fusion_merge_state')
+  const saveKey = encode('fusion_merge_state')
 
   let score = $state(0)
   let highScore = $state(0)
@@ -70,7 +70,7 @@ export const createGrid = (size: number): GridState => {
     delete emptyTilePositions[key]
 
     const tile: Tile = {
-      value: Math.random() < 0.75 ? 1 : 2,
+      value: Math.random() < 0.9 ? 1 : 2,
       row,
       column,
       mergedThisTurn: false,
@@ -91,7 +91,7 @@ export const createGrid = (size: number): GridState => {
   const initializeGrid = (reset: boolean = false): Tile[] => {
     // Load the saved game state
     if (!reset) {
-      const gameState = loadGameState(SAVE_KEY)
+      const gameState = loadGameState(saveKey)
 
       if (gameState) {
         ({ grid, score, highScore, isGameOver, moveCount } = gameState)
@@ -261,6 +261,6 @@ export const createGrid = (size: number): GridState => {
      * @since 1.0.0
      * @version 1.0.0
      */
-    saveGrid: (): void => saveGameState(SAVE_KEY, { grid, score, highScore, isGameOver, moveCount }),
+    saveGrid: (): void => saveGameState(saveKey, { grid, score, highScore, isGameOver, moveCount }),
   }
 }
