@@ -10,7 +10,7 @@
   let { width = 450, size = 4 } = $props()
 
   const state = createGrid(size)
-  const { updatePointerStartPosition, getMoveDirection } = createInputController()
+  const { updatePointerStartPosition, throttlePointerEvent, getMoveDirection } = createInputController()
   let canvas: CanvasState, element: HTMLCanvasElement
 
   /**
@@ -68,7 +68,8 @@
 <svelte:window onkeydown={handleGameMovement} onresize={() => canvas.adjustCanvasSize()}/>
 
 <div class="w-fit mx-auto">
-  <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px" onpointerdown={updatePointerStartPosition} onpointermove={handleGameMovement}
+  <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px" onpointerdown={updatePointerStartPosition}
+          onpointermove={(event) => throttlePointerEvent(event, handleGameMovement)}
           class="w-[var(--initialWidth)] aspect-square mb-4 bg-main rounded-xl touch-none"></canvas>
   <div class="flex flex-col xs:flex-row justify-between gap-4">
     <Score {...state} />

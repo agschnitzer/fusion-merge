@@ -1,5 +1,5 @@
 import type { Coordinates, Direction } from '$lib/types/grid.type'
-import type { InputController } from '$lib/types/input.type'
+import type { InputController, InputControllerOptions } from '$lib/types/input.type'
 
 /**
  * Creates an input controller for handling keyboard and pointer inputs.
@@ -9,14 +9,19 @@ import type { InputController } from '$lib/types/input.type'
  * @returns {InputController} An object containing methods to handle input events.
  */
 export const createInputController = (): InputController => {
-  const minSwipeDistance = 30
-  const keyMappings: Record<string, Direction> = {
-    ArrowUp: 'up',
-    ArrowDown: 'down',
-    ArrowLeft: 'left',
-    ArrowRight: 'right',
+  const options: InputControllerOptions = {
+    minSwipeDistance: 30,
+    keyMappings: {
+      ArrowUp: 'up',
+      ArrowDown: 'down',
+      ArrowLeft: 'left',
+      ArrowRight: 'right',
+    },
+    throttleInterval: 50,
   }
+
   const pointerPosition: Coordinates = { x: 0, y: 0 }
+  let lastCallTime = 0
 
   /**
    * Updates the starting position of a pointer event.
@@ -34,6 +39,23 @@ export const createInputController = (): InputController => {
   }
 
   /**
+   * Throttles pointer event callbacks to prevent excessive function calls.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {PointerEvent} event The pointer event to process.
+   * @param {(event: PointerEvent) => void} callback The function to execute when throttle permits.
+   */
+  const throttlePointerEvent = (event: PointerEvent, callback: (event: PointerEvent) => void): void => {
+    const currentTime = performance.now()
+
+    if (currentTime - lastCallTime < options.throttleInterval) return
+    lastCallTime = currentTime
+
+    callback(event)
+  }
+
+  /**
    * Determines the direction of movement based on a keyboard or pointer event.
    * @since 1.0.0
    * @version 1.0.0
@@ -43,7 +65,7 @@ export const createInputController = (): InputController => {
    */
   const getMoveDirection = (event: KeyboardEvent | PointerEvent): Direction | null => {
     // Return early if the event is not a pointer event
-    if (event instanceof KeyboardEvent) return keyMappings[event.key] ?? null
+    if (event instanceof KeyboardEvent) return options.keyMappings[event.key] ?? null
 
     if (event.pointerType !== 'touch') return null
 
@@ -52,12 +74,13 @@ export const createInputController = (): InputController => {
     const absXDiff = Math.abs(xDiff)
     const absYDiff = Math.abs(yDiff)
 
-    if (absXDiff > absYDiff) return absXDiff >= minSwipeDistance ? (xDiff > 0 ? 'right' : 'left') : null
-    return absYDiff >= minSwipeDistance ? (yDiff > 0 ? 'down' : 'up') : null
+    if (absXDiff > absYDiff) return absXDiff >= options.minSwipeDistance ? (xDiff > 0 ? 'right' : 'left') : null
+    return absYDiff >= options.minSwipeDistance ? (yDiff > 0 ? 'down' : 'up') : null
   }
 
   return {
     updatePointerStartPosition,
+    throttlePointerEvent,
     getMoveDirection,
   }
 }

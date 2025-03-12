@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
 import { createInputController } from '$lib/helpers/input'
 
 const { updatePointerStartPosition, getMoveDirection } = createInputController()
@@ -11,14 +11,12 @@ const { updatePointerStartPosition, getMoveDirection } = createInputController()
  * @param {number} x The x-coordinate of the pointer event.
  * @param {number} y The y-coordinate of the pointer event.
  * @param {string} pointerType The pointer type ('touch', 'mouse', etc).
- * @param {number} button The button used (0 for left click).
  * @returns {PointerEvent} A mock pointer event object.
  */
-const createPointerEvent = (x: number, y: number, pointerType: string = 'touch', button: number = 0): PointerEvent => ({
+const createPointerEvent = (x: number, y: number, pointerType: string = 'touch'): PointerEvent => ({
   x,
   y,
   pointerType,
-  button,
   preventDefault: () => { },
 } as unknown as PointerEvent)
 
@@ -103,5 +101,90 @@ describe('getMoveDirection()', () => {
       const mouseEvent = createPointerEvent(150, 100, 'mouse')
       expect(getMoveDirection(mouseEvent)).toBeNull()
     })
+  })
+})
+
+describe('throttlePointerEvent()', () => {
+  let throttlePointerEvent: ReturnType<typeof createInputController>['throttlePointerEvent']
+
+  beforeEach(() => {
+    throttlePointerEvent = createInputController().throttlePointerEvent
+    vi.useFakeTimers()
+    vi.spyOn(performance, 'now').mockImplementation(() => Date.now())
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should execute callback on first call', () => {
+    const callback = vi.fn()
+    const event = createPointerEvent(100, 100)
+
+    throttlePointerEvent(event, callback)
+
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenCalledWith(event)
+  })
+
+  it('should not execute callback if called again too quickly', () => {
+    const callback = vi.fn()
+    const event1 = createPointerEvent(100, 100)
+    const event2 = createPointerEvent(120, 120)
+
+    throttlePointerEvent(event1, callback)
+    throttlePointerEvent(event2, callback)
+
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenCalledWith(event1)
+  })
+
+  it('should execute callback after throttle interval has passed', () => {
+    const callback = vi.fn()
+    const event1 = createPointerEvent(100, 100)
+    const event2 = createPointerEvent(120, 120)
+
+    throttlePointerEvent(event1, callback)
+
+    // Advance timer by throttle interval (50ms)
+    vi.advanceTimersByTime(50)
+
+    throttlePointerEvent(event2, callback)
+
+    expect(callback).toHaveBeenCalledTimes(2)
+    expect(callback).toHaveBeenNthCalledWith(1, event1)
+    expect(callback).toHaveBeenNthCalledWith(2, event2)
+  })
+
+  it('should execute callback once if called multiple times within throttle interval', () => {
+    const callback = vi.fn()
+    const baseEvent = createPointerEvent(100, 100)
+
+    throttlePointerEvent(baseEvent, callback)
+
+    // Multiple calls within throttle interval
+    for (let i = 0; i < 5; i++) {
+      const event = createPointerEvent(100 + i, 100 + i)
+      throttlePointerEvent(event, callback)
+    }
+
+    expect(callback).toHaveBeenCalledTimes(1)
+  })
+
+  it('should work with custom throttle interval from options', () => {
+    // Create a new controller with custom options
+    const { throttlePointerEvent } = createInputController()
+    const callback = vi.fn()
+    const event1 = createPointerEvent(100, 100)
+    const event2 = createPointerEvent(120, 120)
+
+    throttlePointerEvent(event1, callback)
+
+    // Advance timer by default throttle interval
+    vi.advanceTimersByTime(50)
+
+    throttlePointerEvent(event2, callback)
+
+    expect(callback).toHaveBeenCalledTimes(2)
   })
 })
