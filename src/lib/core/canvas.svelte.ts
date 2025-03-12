@@ -11,7 +11,7 @@ import type { Coordinates, Grid, Tile } from '$lib/types/grid.type'
  * @returns {CanvasState} A canvas state object.
  */
 export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState => {
-  const tileGap = canvas.width / grid.length * 0.08
+  const tileGap = Math.min(Math.max(canvas.width / grid.length * 0.07, 8), 12)
   const options: CanvasOptions = {
     canvasWidth: canvas.width,
     animationDuration: 100,
@@ -307,7 +307,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * @version 1.0.0
    */
   const adjustCanvasSize = (): void => {
-    const canvasWidth = Math.min(window.innerWidth - 32, options.canvasWidth)
+    const canvasWidth = Math.min(window.innerWidth - 48, options.canvasWidth)
     const pixelRatio = window.devicePixelRatio || 1
     const backgroundCanvasContext = backgroundCanvas.getContext('2d')!
 
@@ -323,6 +323,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
     backgroundCanvasContext.fillStyle = options.backgroundColor
     backgroundCanvasContext.fillRect(0, 0, canvas.width, canvas.height)
 
+    options.tileGap = Math.min(Math.max(canvasWidth / options.gridSize * 0.07, 8), 12)
     options.tileSize = (canvasWidth - options.tileGap * (options.gridSize + 1)) / options.gridSize
 
     // Draw the empty tiles
