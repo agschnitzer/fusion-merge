@@ -1,5 +1,5 @@
 import type { CanvasOptions, CanvasState } from '$lib/types/canvas.type'
-import type { Grid, Tile } from '$lib/types/grid.type'
+import type { Coordinates, Grid, Tile } from '$lib/types/grid.type'
 
 /**
  * Creates a canvas state for a game.
@@ -63,9 +63,9 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    *
    * @param {number} x The x-coordinate of the tile.
    * @param {number} y The y-coordinate of the tile.
-   * @returns {{x: number, y: number}} The starting position of the tile.
+   * @returns {Coordinates} The starting position of the tile.
    */
-  const getTileStart = (x: number, y: number): { x: number, y: number } => ({
+  const getTileStart = (x: number, y: number): Coordinates => ({
     x: options.tileGap + x * (options.tileSize + options.tileGap),
     y: options.tileGap + y * (options.tileSize + options.tileGap),
   })
@@ -77,9 +77,9 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    *
    * @param {number} x The x-coordinate of the tile.
    * @param {number} y The y-coordinate of the tile.
-   * @returns {{x: number, y: number}} The center position of the tile.
+   * @returns {Coordinates} The center position of the tile.
    */
-  const getTileCenter = (x: number, y: number): { x: number, y: number } => {
+  const getTileCenter = (x: number, y: number): Coordinates => {
     const start = getTileStart(x, y)
 
     return {
