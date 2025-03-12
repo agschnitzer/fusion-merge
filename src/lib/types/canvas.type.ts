@@ -8,8 +8,6 @@ import type { Tile } from '$lib/types/grid.type'
  * @interface CanvasState
  */
 export interface CanvasState {
-  /** Indicates whether the canvas is currently animating. */
-  isAnimating: boolean
   /**
    * Animates the entry of a tile or tiles into the canvas.
    * @since 1.0.0

@@ -14,7 +14,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   const tileGap = canvas.width / grid.length * 0.08
   const options: CanvasOptions = {
     canvasWidth: canvas.width,
-    animationDuration: 120,
+    animationDuration: 100,
     pulseScaleFactor: 0.15,
     gridSize: grid.length,
     tileSize: (canvas.width - tileGap * (grid.length + 1)) / grid.length,
@@ -339,14 +339,6 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   }
 
   return {
-    /**
-     * Indicates whether the canvas is currently animating.
-     * @since 1.0.0
-     * @version 1.0.0
-     *
-     * @returns {boolean} `true` if the canvas is animating, `false` otherwise.
-     */
-    get isAnimating(): boolean { return !!animationFrameId },
     animateTileEntry,
     animateGridMovement,
     initializeWithTiles,

@@ -34,6 +34,12 @@ export interface InputController {
    * @returns {Direction | null} A direction string ('up', 'down', 'left', 'right') or null if no valid direction is detected.
    */
   getMoveDirection: (event: KeyboardEvent | PointerEvent) => Direction | null
+  /**
+   * Resets the state of the swipe detection.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  resetSwipeState: () => void
 }
 
 /**

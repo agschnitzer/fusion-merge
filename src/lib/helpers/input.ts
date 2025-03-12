@@ -17,11 +17,12 @@ export const createInputController = (): InputController => {
       ArrowLeft: 'left',
       ArrowRight: 'right',
     },
-    throttleInterval: 50,
+    throttleInterval: 100,
   }
 
   const pointerPosition: Coordinates = { x: 0, y: 0 }
   let lastCallTime = 0
+  let swipeProcessed = false
 
   /**
    * Updates the starting position of a pointer event.
@@ -36,6 +37,7 @@ export const createInputController = (): InputController => {
 
     pointerPosition.x = event.x
     pointerPosition.y = event.y
+    resetSwipeState()
   }
 
   /**
@@ -67,20 +69,36 @@ export const createInputController = (): InputController => {
     // Return early if the event is not a pointer event
     if (event instanceof KeyboardEvent) return options.keyMappings[event.key] ?? null
 
-    if (event.pointerType !== 'touch') return null
+    if (event.pointerType !== 'touch' || swipeProcessed) return null
 
     const xDiff = event.x - pointerPosition.x
     const yDiff = event.y - pointerPosition.y
     const absXDiff = Math.abs(xDiff)
     const absYDiff = Math.abs(yDiff)
 
-    if (absXDiff > absYDiff) return absXDiff >= options.minSwipeDistance ? (xDiff > 0 ? 'right' : 'left') : null
-    return absYDiff >= options.minSwipeDistance ? (yDiff > 0 ? 'down' : 'up') : null
+    let direction: Direction | null
+
+    if (absXDiff > absYDiff) {
+      direction = absXDiff >= options.minSwipeDistance ? (xDiff > 0 ? 'right' : 'left') : null
+    } else {
+      direction = absYDiff >= options.minSwipeDistance ? (yDiff > 0 ? 'down' : 'up') : null
+    }
+
+    swipeProcessed = !!direction
+    return direction
   }
+
+  /**
+   * Resets the state of the swipe detection.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const resetSwipeState = () => swipeProcessed = false
 
   return {
     updatePointerStartPosition,
     throttlePointerEvent,
     getMoveDirection,
+    resetSwipeState,
   }
 }
