@@ -10,12 +10,22 @@
 }
 
 @theme {
-    --font-sans: 'Jersey', system-ui, sans-serif;
+    --font-display: 'Jersey', system-ui, sans-serif;
 
     --color-*: initial;
     --color-default: hsl(231, 19%, 100%);
     --color-main: hsl(231, 19%, 20%);
     --color-highlight: hsla(231, 19%, 85%, 0.7);
+    --color-text: hsl(231, 19%, 52%);
 
-    --breakpoint-xs: 24rem;
+    --breakpoint-2xs: 22rem;
+    --breakpoint-xs: 29rem;
+}
+
+a {
+    @apply text-text underline decoration-2;
+}
+
+strong {
+    @apply font-semibold;
 }
