@@ -4,12 +4,13 @@
   import Score from '$lib/components/Score.svelte'
   import { createCanvas } from '$lib/core/canvas.svelte.js'
   import { createGrid } from '$lib/core/grid.svelte'
+  import { createInputController } from '$lib/helpers/input'
   import type { CanvasState } from '$lib/types/canvas.type'
-  import type { Direction } from '$lib/types/grid.type'
 
   let { width = 450, size = 4 } = $props()
 
   const state = createGrid(size)
+  const { updateTouchStartPosition, getMoveDirection } = createInputController()
   let canvas: CanvasState, element: HTMLCanvasElement
 
   /**
@@ -42,19 +43,13 @@
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {KeyboardEvent} event The keyboard event triggered by the user.
+   * @param {KeyboardEvent | TouchEvent} event The event triggered by the user input.
    * @returns {Promise<void>} A promise that resolves when the tile movement is completed.
    */
-  const handleGameMovement = async (event: KeyboardEvent): Promise<void> => {
+  const handleGameMovement = async (event: KeyboardEvent | TouchEvent): Promise<void> => {
     if (state.isGameOver) return
 
-    const directions: Record<string, Direction> = {
-      ArrowUp: 'up',
-      ArrowDown: 'down',
-      ArrowLeft: 'left',
-      ArrowRight: 'right',
-    }
-    const direction = directions[event.key]
+    const direction = getMoveDirection(event)
 
     // Return if the pressed key is not a valid direction or no tiles can be moved in that direction
     if (!direction || !state.moveTiles(direction)) return
@@ -73,8 +68,8 @@
 <svelte:window onkeydown={handleGameMovement} onresize={() => canvas.adjustCanvasSize()}/>
 
 <div class="w-fit mx-auto">
-  <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px"
-          class="w-[var(--initialWidth)] aspect-square mb-4 bg-main rounded-xl"></canvas>
+  <canvas bind:this={element} {width} height={width} style="--initialWidth: {width}px" ontouchstart={updateTouchStartPosition} ontouchend={handleGameMovement}
+          class="w-[var(--initialWidth)] aspect-square mb-4 bg-main rounded-xl touch-none"></canvas>
   <div class="flex flex-col xs:flex-row justify-between gap-4">
     <Score {...state} />
     <Controls onclick={resetGame}/>
