@@ -2,7 +2,7 @@ import type { Coordinates, Direction } from '$lib/types/grid.type'
 import type { InputController } from '$lib/types/input.type'
 
 /**
- * Creates an input controller for handling keyboard and touch inputs.
+ * Creates an input controller for handling keyboard and pointer inputs.
  * @since 1.0.0
  * @version 1.0.0
  *
@@ -16,41 +16,39 @@ export const createInputController = (): InputController => {
     ArrowLeft: 'left',
     ArrowRight: 'right',
   }
-  const touchPosition: Coordinates = { x: 0, y: 0 }
+  const pointerPosition: Coordinates = { x: 0, y: 0 }
 
   /**
-   * Updates the starting position of a touch event.
+   * Updates the starting position of a pointer event.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {TouchEvent} event The start touch event.
+   * @param {TouchEvent} event The start pointer event.
    */
-  const updateTouchStartPosition = (event: TouchEvent): void => {
+  const updatePointerStartPosition = (event: PointerEvent): void => {
+    if (event.pointerType !== 'touch') return
     event.preventDefault()
 
-    const touch = event.changedTouches?.[0]
-    if (!touch) return
-
-    ({ clientX: touchPosition.x, clientY: touchPosition.y } = touch)
+    pointerPosition.x = event.x
+    pointerPosition.y = event.y
   }
 
   /**
-   * Determines the direction of movement based on a keyboard or touch event.
+   * Determines the direction of movement based on a keyboard or pointer event.
    * @since 1.0.0
    * @version 1.0.0
    *
-   * @param {KeyboardEvent | TouchEvent} event The keyboard or touch event.
+   * @param {KeyboardEvent | PointerEvent} event The keyboard or pointer event.
    * @returns {Direction | null} A direction string ('up', 'down', 'left', 'right') or null if no valid direction is detected.
    */
-  const getMoveDirection = (event: KeyboardEvent | TouchEvent): Direction | null => {
-    // Return early if the event is not a touch event
+  const getMoveDirection = (event: KeyboardEvent | PointerEvent): Direction | null => {
+    // Return early if the event is not a pointer event
     if (event instanceof KeyboardEvent) return keyMappings[event.key] ?? null
 
-    const touch = event.changedTouches?.[0]
-    if (!touch) return null
+    if (event.pointerType !== 'touch') return null
 
-    const xDiff = touch.clientX - touchPosition.x
-    const yDiff = touch.clientY - touchPosition.y
+    const xDiff = event.x - pointerPosition.x
+    const yDiff = event.y - pointerPosition.y
     const absXDiff = Math.abs(xDiff)
     const absYDiff = Math.abs(yDiff)
 
@@ -59,7 +57,7 @@ export const createInputController = (): InputController => {
   }
 
   return {
-    updateTouchStartPosition,
+    updatePointerStartPosition,
     getMoveDirection,
   }
 }
