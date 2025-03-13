@@ -10,14 +10,14 @@ import type { InputController, InputControllerOptions } from '$lib/types/input.t
  */
 export const createInputController = (): InputController => {
   const options: InputControllerOptions = {
-    minSwipeDistance: 30,
+    minSwipeDistance: 5,
     keyMappings: {
       ArrowUp: 'up',
       ArrowDown: 'down',
       ArrowLeft: 'left',
       ArrowRight: 'right',
     },
-    throttleInterval: 100,
+    throttleInterval: 80,
   }
 
   const pointerPosition: Coordinates = { x: 0, y: 0 }
@@ -49,6 +49,7 @@ export const createInputController = (): InputController => {
    * @param {(event: PointerEvent) => void} callback The function to execute when throttle permits.
    */
   const throttlePointerEvent = (event: PointerEvent, callback: (event: PointerEvent) => void): void => {
+    event.preventDefault()
     const currentTime = performance.now()
 
     if (currentTime - lastCallTime < options.throttleInterval) return
