@@ -1,31 +1,59 @@
 @import 'tailwindcss';
 
 @font-face {
-    font-family: 'Jersey';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: local('Jersey'), url('/Jersey.woff2') format('woff2');
-    unicode-range: U+020-07F;
+  font-family: 'Jersey';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Jersey'), url('/Jersey.woff2') format('woff2');
+  unicode-range: U+020-07F;
 }
 
 @theme {
-    --font-display: 'Jersey', system-ui, sans-serif;
+  --font-display: 'Jersey', system-ui, sans-serif;
 
-    --color-*: initial;
-    --color-default: hsl(231, 19%, 100%);
-    --color-main: hsl(231, 19%, 20%);
-    --color-highlight: hsla(231, 19%, 85%, 0.7);
-    --color-text: hsl(231, 19%, 52%);
+  --color-*: initial;
+  --color-default: hsl(231, 19%, 100%);
+  --color-main: hsl(231, 19%, 20%);
+  --color-highlight: hsla(231, 19%, 85%, 0.7);
+  --color-text: hsl(231, 19%, 52%);
 
-    --breakpoint-2xs: 22rem;
-    --breakpoint-xs: 29rem;
+  --breakpoint-2xs: 22rem;
+  --breakpoint-xs: 29rem;
 }
 
-a {
+@layer base {
+  a {
     @apply text-text underline decoration-2;
+  }
+
+  button {
+    @apply p-3 text-2xl rounded-lg cursor-pointer;
+  }
+
+  strong {
+    @apply font-semibold;
+  }
+
+  h1, h2, h3 {
+    @apply font-display;
+  }
 }
 
-strong {
-    @apply font-semibold;
+@utility heading-1 {
+  @apply text-5xl leading-none tracking-tight;
+}
+
+@utility heading-2 {
+  @apply text-2xl leading-none tracking-tight;
+}
+
+@utility heading-3 {
+  @apply text-xl leading-none tracking-tight;
+}
+
+@layer components {
+  .score-card {
+    @apply px-3 py-2 basis-36 grow flex justify-between border-2 border-main rounded-lg;
+  }
 }

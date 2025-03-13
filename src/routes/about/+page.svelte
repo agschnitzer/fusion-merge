@@ -27,7 +27,7 @@
 
 <article aria-labelledby="about-heading" class="space-y-6 font-sans">
   <header class="mb-4">
-    <h2 id="about-heading" class="text-2xl font-display tracking-tight">About Fusion Merge</h2>
+    <h2 id="about-heading" class="heading-2">About Fusion Merge</h2>
   </header>
   <div class="space-y-4">
     <p>
@@ -45,7 +45,7 @@
   {#each sections as { heading, content } (`section-${heading}`)}
     <section class="space-y-4">
       <header>
-        <h3 class="text-xl font-display tracking-tight">{heading}</h3>
+        <h3 class="heading-3">{heading}</h3>
       </header>
       {#if typeof content === 'string'}
         <p>{@html content}</p>
