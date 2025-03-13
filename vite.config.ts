@@ -9,8 +9,9 @@ const config = defineConfig({
     host: '0.0.0.0',
   },
   test: {
+    globals: true,
     coverage: {
-      include: ['src/**/*.{js,ts,svelte}'],
+      include: ['src/**/*.{ts,svelte}'],
       exclude: ['src/lib/types/**/*.ts'],
       reportsDirectory: './tests/coverage',
     },
@@ -22,8 +23,7 @@ const config = defineConfig({
           name: 'client',
           environment: 'jsdom',
           clearMocks: true,
-          include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-          exclude: ['src/lib/server/**'],
+          include: ['tests/components/**/*.test.ts'],
           setupFiles: ['./vitest-setup-client.ts'],
         },
       },
@@ -32,8 +32,8 @@ const config = defineConfig({
         test: {
           name: 'server',
           environment: 'jsdom',
-          include: ['tests/**/*.{test,spec}.{js,ts}'],
-          exclude: ['tests/**/*.svelte.{test,spec}.{js,ts}'],
+          include: ['tests/**/*.test.ts'],
+          exclude: ['tests/components/**/*.test.ts'],
         },
       },
     ],
