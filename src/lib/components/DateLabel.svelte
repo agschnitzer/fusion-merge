@@ -1,6 +1,5 @@
-<script lang="ts">
-  let { children, date, class: styles } = $props()
-
+<!-- @component Formatted date with label -->
+<script lang="ts" module>
   /**
    * Convert a date string to a human-readable format.
    * @since 1.0.0
@@ -12,6 +11,10 @@
   export const dateToString = (date: string): string => new Date(date).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   })
+</script>
+
+<script lang="ts">
+  let { children, date, class: styles = undefined } = $props()
 </script>
 
 <p class={styles}>
