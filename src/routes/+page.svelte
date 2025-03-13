@@ -2,6 +2,8 @@
   import type { Game } from '$lib/types/game.type'
   import { getContext } from 'svelte'
 
+  let { data } = $props()
+
   const game: Game = getContext('game')
   $effect(() => {
     document.fonts.ready.then(game.initializeGame)
@@ -9,6 +11,10 @@
 </script>
 
 <svelte:window onkeydown={game.handleGameMovement} onresize={game.canvas.adjustCanvasSize}/>
+
+<svelte:head>
+  {@html `<script type="application/ld+json">${JSON.stringify(data.meta.structuredData)}</script>`}
+</svelte:head>
 
 <div class="mb-2 flex flex-wrap justify-between gap-2 text-2xl uppercase">
   <p class="score-card border-text bg-highlight">

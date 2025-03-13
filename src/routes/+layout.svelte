@@ -10,7 +10,48 @@
 
   // Create a new game instance to use the resetGame method here
   setContext('game', game)
+
+  /**
+   * Convert a date string to a human-readable format.
+   * @since 1.0.0
+   * @version 1.0.0
+   *
+   * @param {string} date The date string to convert.
+   * @returns {string} A human-readable date string.
+   */
+  const dateToString = (date: string): string => new Date(date).toLocaleDateString('en-GB', {
+    year: 'numeric', month: 'long', day: 'numeric',
+  })
 </script>
+
+<svelte:head>
+  <link rel="canonical" href={page.data.meta.url}>
+
+  <title>{page.data.meta.title}</title>
+  <meta property="og:title" content={page.data.meta.title}>
+  <meta name="og:site_name" content={page.data.meta.title}>
+  <meta property="twitter:title" content={page.data.meta.title}>
+
+  <meta name="description" content={page.data.meta.description}>
+  <meta property="og:description" content={page.data.meta.description}>
+  <meta property="twitter:description" content={page.data.meta.description}>
+
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content={page.data.meta.url}>
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- TODO: Add image -->
+</svelte:head>
+
+<p class="sr-only">
+  Published
+  <time datetime={page.data.meta.publishedOn}>{dateToString(page.data.meta.publishedOn)}</time>
+</p>
+<p class="sr-only">
+  Last updated:
+  <time datetime={page.data.meta.updatedAt}>{dateToString(page.data.meta.updatedAt)}</time>
+</p>
 
 <div class="w-fit mx-auto px-6">
   <header class="min-h-12 2xs:mb-4 py-6 flex flex-wrap justify-between items-center 2xs:gap-x-4">
