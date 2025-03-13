@@ -58,7 +58,7 @@ export const createGame = (): Game => {
    * @returns {Promise<void>} A promise that resolves when the tile movement is completed.
    */
   const handleGameMovement = async (event: KeyboardEvent | PointerEvent): Promise<void> => {
-    if (state.isGameOver) return
+    if (state.isGameOver || state.isGameWon) return
 
     const direction = controller.getMoveDirection(event)
 

@@ -15,6 +15,7 @@ export const createGrid = (size: number): GridState => {
   let score = $state(0)
   let highScore = $state(0)
   let isGameOver = $state(false)
+  let isGameWon = $state(false)
   let moveCount = $state(0)
 
   let grid: Grid = Array.from({ length: size }, () => Array(size).fill(null))
@@ -122,7 +123,7 @@ export const createGrid = (size: number): GridState => {
       const gameState = loadGameState(saveKey)
 
       if (gameState) {
-        ({ grid, score, highScore, isGameOver, moveCount } = gameState)
+        ({ grid, score, highScore, isGameOver, isGameWon, moveCount } = gameState)
         return []
       }
     }
@@ -180,6 +181,14 @@ export const createGrid = (size: number): GridState => {
      */
     get isGameOver(): boolean { return isGameOver },
     /**
+     * Returns the game won status.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @returns {boolean} `true` if the game is won, `false` otherwise.
+     */
+    get isGameWon(): boolean { return isGameWon },
+    /**
      * Returns the number of moves made.
      * @since 1.0.0
      * @version 1.0.0
@@ -235,6 +244,7 @@ export const createGrid = (size: number): GridState => {
             score += Math.pow(2, adjacentTile.value)
             highScore = Math.max(score, highScore)
 
+            isGameWon = adjacentTile.value === 10
             hasMoved = updateTilePositions(moveToRow, moveToCol, mergeCheckRow, mergeCheckCol)
             grid[mergeCheckRow][mergeCheckCol]!.mergedThisTurn = true
 
@@ -245,7 +255,7 @@ export const createGrid = (size: number): GridState => {
         }
       }
 
-      checkGameOver()
+      if (!isGameWon) checkGameOver()
 
       moveCount += Number(hasMoved)
       return hasMoved
@@ -263,6 +273,7 @@ export const createGrid = (size: number): GridState => {
       score = 0
       moveCount = 0
       isGameOver = false
+      isGameWon = false
 
       return initializeGrid(true)
     },
@@ -271,6 +282,6 @@ export const createGrid = (size: number): GridState => {
      * @since 1.0.0
      * @version 1.0.0
      */
-    saveGrid: (): void => saveGameState(saveKey, { grid, score, highScore, isGameOver, moveCount }),
+    saveGrid: (): void => saveGameState(saveKey, { grid, score, highScore, isGameOver, isGameWon, moveCount }),
   }
 }
