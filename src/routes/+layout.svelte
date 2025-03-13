@@ -1,8 +1,8 @@
 <script lang="ts">
   import '../app.css'
   import { page } from '$app/state'
+  import DateLabel from '$lib/components/DateLabel.svelte'
   import { createGame } from '$lib/core/game.svelte'
-  import { dateToString } from '$lib/helpers/date'
   import { setContext } from 'svelte'
 
   let { children } = $props()
@@ -33,14 +33,8 @@
   <!-- TODO: Add image -->
 </svelte:head>
 
-<p class="sr-only">
-  Published
-  <time datetime={page.data.meta.publishedOn}>{dateToString(page.data.meta.publishedOn)}</time>
-</p>
-<p class="sr-only">
-  Last updated:
-  <time datetime={page.data.meta.updatedAt}>{dateToString(page.data.meta.updatedAt)}</time>
-</p>
+<DateLabel date={page.data.meta.publishedOn} class="sr-only">Published on</DateLabel>
+<DateLabel date={page.data.meta.updatedAt} class="sr-only">Last updated on</DateLabel>
 
 <div class="w-fit mx-auto px-6">
   <header class="min-h-12 2xs:mb-4 py-6 flex flex-wrap justify-between items-center 2xs:gap-x-4">
