@@ -60,6 +60,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Calculates the starting position of a tile.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    *
    * @param {number} x The x-coordinate of the tile.
    * @param {number} y The y-coordinate of the tile.
@@ -74,6 +75,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Calculates the center position of a tile.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    *
    * @param {number} x The x-coordinate of the tile.
    * @param {number} y The y-coordinate of the tile.
@@ -92,6 +94,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Draws text on the canvas.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    *
    * @param {string} text The text content to draw.
    * @param {number} x The x-coordinate of the text.
@@ -112,6 +115,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Draws a tile shape on the canvas.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    *
    * @param {number} x The x-coordinate of the tile.
    * @param {number} y The y-coordinate of the tile.
@@ -131,6 +135,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Draws an atom tile on the canvas.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    *
    * @param {number} x The x-coordinate of the tile.
    * @param {number} y The y-coordinate of the tile.
@@ -160,6 +165,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Draws a scaled atom tile on the canvas.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    *
    * @param {number} x The x-coordinate of the tile.
    * @param {number} y The y-coordinate of the tile.
@@ -182,6 +188,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Draws the animated grid on the canvas.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    *
    * @param {number} t The animation progress (0 to 1).
    */
@@ -212,6 +219,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Resets the canvas to its initial state.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    */
   const resetCanvas = (): void => {
     canvasContext.clearRect(0, 0, canvas.width, canvas.height)
@@ -222,6 +230,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Stops the current animation.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    */
   const stopAnimation = (): void => {
     if (animationFrameId) {
@@ -234,6 +243,7 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
    * Animates a callback function over a specified duration.
    * @since 1.0.0
    * @version 1.0.0
+   * @private
    *
    * @param {(t: number) => void} callback The callback function to call on each animation frame.
    * @returns {Promise<void>} A promise that resolves when the animation is complete.
