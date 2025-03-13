@@ -104,7 +104,27 @@ describe('createGrid()', () => {
     const directions: Direction[] = ['up', 'down', 'left', 'right']
     directions.forEach(direction => expect(state.moveTiles(direction)).toBeFalsy())
 
+    // Call the renamed method directly to test it
+    state.checkGameOver()
     expect(state.isGameOver).toBe(true)
+  })
+
+  it('should detect game won correctly', () => {
+    // Create a grid with the winning value (assuming it's 10 based on conversation context)
+    state.grid = [
+      [{ value: 9, row: 0, column: 0, mergedThisTurn: false }, { value: 9, row: 0, column: 1, mergedThisTurn: false }, null, null],
+      [null, null, null, null],
+      [null, null, null, null],
+      [null, null, null, null],
+    ]
+
+    // Move in any direction to trigger game state check
+    state.moveTiles('right')
+
+    // The game should recognize the win condition
+    expect(state.isGameWon).toBe(true)
+    // Game shouldn't be over just because it's won
+    expect(state.isGameOver).toBe(false)
   })
 
   it('should reset the grid to initial state', () => {
@@ -219,11 +239,9 @@ describe('createGrid()', () => {
       score: 64,
       highScore: 128,
       isGameOver: false,
-      isGameWon: false,
+      isGameWon: true,
       moveCount: 10,
     })
-
-    state.grid[0][0] = { value: 3, row: 0, column: 0, mergedThisTurn: false }
 
     // Save current state
     state.saveGrid()
@@ -237,6 +255,8 @@ describe('createGrid()', () => {
     expect(state.score).toBe(64)
     expect(state.highScore).toBe(128)
     expect(state.moveCount).toBe(10)
+    expect(state.isGameWon).toBe(true)
+    expect(state.isGameOver).toBe(false)
     expect(tiles).toEqual([]) // No new tiles added when loading saved state
   })
 })
