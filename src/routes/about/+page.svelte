@@ -1,5 +1,5 @@
 <script lang="ts">
-  import DateLabel from '$lib/components/DateLabel.svelte'
+  import DateLabel from '$lib/components/elements/DateLabel.svelte'
 
   let { data } = $props()
 

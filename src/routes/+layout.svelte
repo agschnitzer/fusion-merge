@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../app.css'
   import { page } from '$app/state'
-  import DateLabel from '$lib/components/DateLabel.svelte'
+  import DateLabel from '$lib/components/elements/DateLabel.svelte'
   import { createGame } from '$lib/core/game.svelte'
   import { setContext } from 'svelte'
 
