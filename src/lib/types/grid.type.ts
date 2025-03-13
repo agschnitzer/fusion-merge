@@ -24,6 +24,12 @@ export interface GridState extends GameState {
    */
   moveTiles: (direction: Direction) => boolean
   /**
+   * Checks if the game is over by verifying if no moves are possible.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  checkGameOver: () => void
+  /**
    * Depending on the `reset` parameter, either resets the grid to its initial state or loads the saved state.
    *
    * @summary Initializes the grid with a specified number of tiles.
