@@ -56,4 +56,8 @@
   .score-card {
     @apply px-3 py-2 basis-36 grow flex justify-between border-2 border-main rounded-lg;
   }
+
+  .label {
+    @apply text-xs text-text font-sans;
+  }
 }
