@@ -19,7 +19,7 @@ export const encode = (str: string): string => btoa(str)
  * @param {string} str The Base64 encoded string to decode.
  * @returns {string} The decoded string.
  */
-const decode = (str: string): string => atob(str)
+export const decode = (str: string): string => atob(str)
 
 /**
  * Loads the game state from local storage.
