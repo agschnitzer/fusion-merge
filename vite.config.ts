@@ -9,26 +9,34 @@ const config = defineConfig({
     host: '0.0.0.0',
   },
   test: {
-    workspace: [{
-      extends: './vite.config.ts',
-      plugins: [svelteTesting()],
-      test: {
-        name: 'client',
-        environment: 'jsdom',
-        clearMocks: true,
-        include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-        exclude: ['src/lib/server/**'],
-        setupFiles: ['./vitest-setup-client.ts'],
+    coverage: {
+      include: ['src/**/*.{js,ts,svelte}'],
+      exclude: ['src/lib/types/**/*.ts'],
+      reportsDirectory: './tests/coverage',
+    },
+    workspace: [
+      {
+        extends: './vite.config.ts',
+        plugins: [svelteTesting()],
+        test: {
+          name: 'client',
+          environment: 'jsdom',
+          clearMocks: true,
+          include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
+          exclude: ['src/lib/server/**'],
+          setupFiles: ['./vitest-setup-client.ts'],
+        },
       },
-    }, {
-      extends: './vite.config.ts',
-      test: {
-        name: 'server',
-        environment: 'jsdom',
-        include: ['tests/**/*.{test,spec}.{js,ts}'],
-        exclude: ['tests/**/*.svelte.{test,spec}.{js,ts}'],
+      {
+        extends: './vite.config.ts',
+        test: {
+          name: 'server',
+          environment: 'jsdom',
+          include: ['tests/**/*.{test,spec}.{js,ts}'],
+          exclude: ['tests/**/*.svelte.{test,spec}.{js,ts}'],
+        },
       },
-    }],
+    ],
   },
 })
 
