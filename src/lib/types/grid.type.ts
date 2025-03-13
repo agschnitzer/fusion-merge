@@ -72,6 +72,8 @@ export interface GameState {
   highScore: number
   /** `true` if the game is over, `false` otherwise. */
   isGameOver: boolean
+  /** `true` if the game has been won, `false` otherwise. */
+  isGameWon: boolean
   /** The number of moves made. */
   moveCount: number
 }

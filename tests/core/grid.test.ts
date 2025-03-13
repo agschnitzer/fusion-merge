@@ -219,6 +219,7 @@ describe('createGrid()', () => {
       score: 64,
       highScore: 128,
       isGameOver: false,
+      isGameWon: false,
       moveCount: 10,
     })
 
