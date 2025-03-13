@@ -3,7 +3,9 @@
   import { getContext } from 'svelte'
 
   const game: Game = getContext('game')
-  $effect(game.initializeGame)
+  $effect(() => {
+    document.fonts.ready.then(game.initializeGame)
+  })
 </script>
 
 <svelte:window onkeydown={game.handleGameMovement} onresize={game.canvas.adjustCanvasSize}/>
