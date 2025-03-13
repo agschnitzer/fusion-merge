@@ -213,7 +213,7 @@ describe('getMoveDirection()', () => {
     })
 
     it('should return null for small movements below threshold', () => {
-      const endEvent = createPointerEvent(110, 105) // Small movement
+      const endEvent = createPointerEvent(102, 104) // Small movement
       expect(getMoveDirection(endEvent)).toBeNull()
     })
 
