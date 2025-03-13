@@ -26,28 +26,28 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
     defaultTextColor: 'hsl(218, 36%, 18%)',
     atomSymbols: ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne'],
     atomTileBackgroundColors: [
-      'hsl(0, 45%, 70%)',      // H (Hydrogen) - softer red
-      'hsl(40, 45%, 75%)',     // He (Helium) - softer orange/yellow
-      'hsl(260, 45%, 70%)',    // Li (Lithium) - softer purple
-      'hsl(120, 35%, 65%)',    // Be (Beryllium) - softer green
-      'hsl(190, 50%, 65%)',    // B (Boron) - softer sky blue
-      'hsl(220, 40%, 50%)',    // C (Carbon) - softer dark blue
-      'hsl(160, 40%, 65%)',    // N (Nitrogen) - softer teal
-      'hsl(200, 50%, 70%)',    // O (Oxygen) - softer bright blue
-      'hsl(60, 50%, 75%)',     // F (Fluorine) - softer yellow
-      'hsl(280, 40%, 75%)',    // Ne (Neon) - softer light purple/pink
+      'hsl(200, 100%, 90%)',
+      'hsl(40, 100%, 85%)',
+      'hsl(340, 90%, 80%)',
+      'hsl(150, 50%, 70%)',
+      'hsl(200, 40%, 60%)',
+      'hsl(0, 0%, 90%)',
+      'hsl(220, 80%, 60%)',
+      'hsl(180, 100%, 70%)',
+      'hsl(80, 100%, 75%)',
+      'hsl(0, 100%, 70%)',
     ],
     atomTextColors: [
-      'hsl(0, 60%, 25%)',      // H (Hydrogen) - dark red
-      'hsl(40, 70%, 25%)',     // He (Helium) - dark amber
-      'hsl(260, 60%, 25%)',    // Li (Lithium) - dark purple
-      'hsl(120, 50%, 25%)',    // Be (Beryllium) - dark green
-      'hsl(190, 65%, 25%)',    // B (Boron) - dark sky blue
-      'hsl(220, 70%, 20%)',    // C (Carbon) - very dark blue
-      'hsl(160, 60%, 25%)',    // N (Nitrogen) - dark teal
-      'hsl(200, 70%, 25%)',    // O (Oxygen) - dark blue
-      'hsl(60, 70%, 25%)',     // F (Fluorine) - dark yellow
-      'hsl(280, 60%, 25%)',    // Ne (Neon) - dark purple
+      'hsl(220, 100%, 30%)',
+      'hsl(30, 100%, 25%)',
+      'hsl(350, 100%, 30%)',
+      'hsl(160, 100%, 20%)',
+      'hsl(210, 100%, 20%)',
+      'hsl(0, 0%, 20%)',
+      'hsl(230, 100%, 20%)',
+      'hsl(190, 100%, 20%)',
+      'hsl(90, 100%, 20%)',
+      'hsl(10, 100%, 20%)',
     ],
   }
 
