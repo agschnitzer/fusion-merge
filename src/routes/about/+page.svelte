@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { dateToString } from '$lib/helpers/date'
+  import DateLabel from '$lib/components/DateLabel.svelte'
 
   let { data } = $props()
 
@@ -39,9 +39,8 @@
     </section>
   {/each}
   <footer>
-    <p class="label">
+    <DateLabel date={data.meta.publishedOn} class="label">
       Last updated on
-      <time datetime={data.meta.updatedAt}>{dateToString(data.meta.updatedAt)}</time>
-    </p>
+    </DateLabel>
   </footer>
 </article>
