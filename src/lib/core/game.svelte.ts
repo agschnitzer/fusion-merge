@@ -15,7 +15,7 @@ import type { InputController } from '$lib/types/input.type'
  */
 export const createGame = (): Game => {
   const options: GameOptions = {
-    initialWidth: 672,
+    initialWidth: 526,
     size: 4,
     canvasId: 'game-canvas',
   }
