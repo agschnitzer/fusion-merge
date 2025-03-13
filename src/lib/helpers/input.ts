@@ -70,7 +70,7 @@ export const createInputController = (): InputController => {
     // Return early if the event is not a pointer event
     if (event instanceof KeyboardEvent) return options.keyMappings[event.key] ?? null
 
-    if (event.pointerType !== 'touch' || swipeProcessed) return null
+    if (event.pointerType !== 'touch' || swipeProcessed || !pointerPosition.x || !pointerPosition.y) return null
 
     const xDiff = event.x - pointerPosition.x
     const yDiff = event.y - pointerPosition.y
