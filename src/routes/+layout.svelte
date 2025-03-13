@@ -2,6 +2,7 @@
   import '../app.css'
   import { page } from '$app/state'
   import { createGame } from '$lib/core/game.svelte'
+  import { dateToString } from '$lib/helpers/date'
   import { setContext } from 'svelte'
 
   let { children } = $props()
@@ -10,18 +11,6 @@
 
   // Create a new game instance to use the resetGame method here
   setContext('game', game)
-
-  /**
-   * Convert a date string to a human-readable format.
-   * @since 1.0.0
-   * @version 1.0.0
-   *
-   * @param {string} date The date string to convert.
-   * @returns {string} A human-readable date string.
-   */
-  const dateToString = (date: string): string => new Date(date).toLocaleDateString('en-GB', {
-    year: 'numeric', month: 'long', day: 'numeric',
-  })
 </script>
 
 <svelte:head>
