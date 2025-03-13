@@ -70,6 +70,7 @@ export const createGame = (): Game => {
     const tile = state.addTile()
     await canvas.animateTileEntry(tile)
 
+    state.checkGameOver()
     state.saveGrid()
   }
 

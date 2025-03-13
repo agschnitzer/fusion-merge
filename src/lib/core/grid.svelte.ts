@@ -81,6 +81,34 @@ export const createGrid = (size: number): GridState => {
   }
 
   /**
+   * Checks if the game is over by verifying if no moves are possible.
+   * @since 1.0.0
+   * @version 1.0.0
+   */
+  const checkGameOver = (): void => {
+    // Check if the game is over when there are no empty tiles left
+    if (!Object.keys(emptyTilePositions).length) {
+      isGameOver = true
+
+      for (let row = 0; row < size; row++) {
+        for (let column = 0; column < size; column++) {
+          const tile = grid[row][column]
+          const boundary = size - 1
+
+          // Check if the tile can be merged with its right or bottom neighbour
+          if (tile && ((column < boundary && grid[row][column + 1]?.value === tile.value) ||
+              (row < boundary && grid[row + 1][column]?.value === tile.value))) {
+            isGameOver = false
+            break
+          }
+        }
+
+        if (!isGameOver) break
+      }
+    }
+  }
+
+  /**
    * Initializes the grid with a specified number of tiles.
    * @since 1.0.0
    * @version 1.0.0
@@ -217,30 +245,12 @@ export const createGrid = (size: number): GridState => {
         }
       }
 
-      // Check if the game is over when there are no empty tiles left
-      if (!Object.keys(emptyTilePositions).length) {
-        isGameOver = true
-
-        for (let row = 0; row < size; row++) {
-          for (let column = 0; column < size; column++) {
-            const tile = grid[row][column]
-            const boundary = size - 1
-
-            // Check if the tile can be merged with its right or bottom neighbour
-            if (tile && ((column < boundary && grid[row][column + 1]?.value === tile.value) ||
-                (row < boundary && grid[row + 1][column]?.value === tile.value))) {
-              isGameOver = false
-              break
-            }
-          }
-
-          if (!isGameOver) break
-        }
-      }
+      checkGameOver()
 
       moveCount += Number(hasMoved)
       return hasMoved
     },
+    checkGameOver,
     initializeGrid,
     /**
      * Resets the grid to its initial state with two random tiles.
