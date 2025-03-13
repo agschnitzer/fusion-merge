@@ -21,7 +21,7 @@
           <a href="/">Play Fusion Merge</a>
         </li>
         <li>
-          <a href="/about">About</a>
+          <a href="/about/">About</a>
         </li>
       </ul>
     </nav>
@@ -41,9 +41,9 @@
     {/if}
   </header>
   <main class="max-w-2xl">{@render children()}</main>
-  <footer class="py-6 flex flex-wrap justify-between items-center 2xs:gap-x-4">
+  <footer class="py-4 flex flex-wrap justify-between items-center 2xs:gap-x-4">
     {#if page.url.pathname === '/'}
-      <a href="/about" class="text-xl">About the game</a>
+      <a href="/about/" class="text-xl">About the game</a>
     {/if}
     <p class="text-xs text-text font-sans">&copy; {new Date().getFullYear()} Alex Gschnitzer</p>
   </footer>
