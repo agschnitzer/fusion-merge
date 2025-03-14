@@ -350,6 +350,14 @@ export const createCanvas = (canvas: HTMLCanvasElement, grid: Grid): CanvasState
   }
 
   return {
+    /**
+     * Returns the canvas options.
+     * @since 1.0.0
+     * @version 1.0.0
+     *
+     * @returns {CanvasOptions} The canvas options.
+     */
+    get _options(): CanvasOptions { return options },
     animateTileEntry,
     animateGridMovement,
     initializeWithTiles,
