@@ -39,6 +39,15 @@ describe('Header', () => {
 
   })
 
+  it('should render the logo', () => {
+    const { container } = renderComponent()
+    const logo = container.querySelector('img')
+
+    expect(logo).toBeInTheDocument()
+    expect(logo).toHaveAttribute('src', '/app-icon.png')
+    expect(logo).toHaveAttribute('alt', 'Fusion Merge App Icon')
+  })
+
   it('should render the title', () => {
     const { getByText } = renderComponent()
     expect(getByText('Fusion Merge')).toBeInTheDocument()
