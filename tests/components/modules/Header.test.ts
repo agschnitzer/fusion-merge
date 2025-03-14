@@ -27,16 +27,21 @@ describe('Header', () => {
 
     const nav = container.querySelector('nav')
     const links = container.querySelectorAll('a')
+    const homeLink = links[0]
+    const aboutLink = links[1]
 
     expect(nav).toBeInTheDocument()
-    expect(nav).toHaveClass('sr-only')
-
     expect(links.length).toBe(2)
-    expect(links[0].textContent).toBe('Play Fusion Merge')
-    expect(links[0].getAttribute('href')).toBe('/')
-    expect(links[1].textContent).toBe('About the game')
-    expect(links[1].getAttribute('href')).toBe('/about/')
 
+    expect(homeLink).toBeInTheDocument()
+    expect(homeLink.querySelector('img')).toBeInTheDocument()
+    expect(homeLink.querySelector('span')!.textContent).toContain('Play Fusion Merge')
+    expect(homeLink.getAttribute('href')).toBe('/')
+
+    expect(aboutLink).toBeInTheDocument()
+    expect(aboutLink.textContent).toBe('About the game')
+    expect(aboutLink.getAttribute('href')).toBe('/about/')
+    expect(aboutLink.parentElement).toHaveClass('sr-only')
   })
 
   it('should render the logo', () => {
