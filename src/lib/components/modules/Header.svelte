@@ -18,7 +18,10 @@
       </li>
     </ul>
   </nav>
-  <h1 class="heading-1">Fusion Merge</h1>
+  <div class="flex items-center gap-4">
+    <img src="/app-icon.png" alt="Fusion Merge App Icon" width="96" height="96" class="w-12"/>
+    <h1 class="hidden xs:block heading-1">Fusion Merge</h1>
+  </div>
   {#if page.url.pathname === '/'}
     <button onclick={game.resetGame}>
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
