@@ -7,19 +7,20 @@
 </script>
 
 <header class="min-h-12 2xs:mb-4 py-6 flex flex-wrap justify-between items-center 2xs:gap-x-4">
-  <!-- Navigation for screen readers -->
-  <nav class="sr-only" aria-label="Main Navigation">
-    <ul>
-      <li>
-        <a href="/">Play Fusion Merge</a>
-      </li>
-      <li>
-        <a href="/about/">About the game</a>
-      </li>
-    </ul>
-  </nav>
   <div class="flex items-center gap-4">
-    <img src="/app-icon.png" alt="Fusion Merge App Icon" width="96" height="96" class="w-12"/>
+    <nav aria-label="Main Navigation">
+      <ul>
+        <li>
+          <a href="/">
+            <img src="/app-icon.png" alt="Fusion Merge App Icon" width="96" height="96" class="w-12"/>
+            <span class="sr-only">Play Fusion Merge</span>
+          </a>
+        </li>
+        <li class="sr-only">
+          <a href="/about/">About the game</a>
+        </li>
+      </ul>
+    </nav>
     <h1 class="hidden xs:block heading-1">Fusion Merge</h1>
   </div>
   {#if page.url.pathname === '/'}
