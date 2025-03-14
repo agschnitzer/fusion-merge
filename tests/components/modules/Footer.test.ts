@@ -1,6 +1,6 @@
 import Footer from '$lib/components/modules/Footer.svelte'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createRenderComponent } from '../../utils/render-component'
+import { createRenderComponent } from '$utils/render-component'
 
 let mockPathname = '/'
 vi.mock('$app/state', () => ({

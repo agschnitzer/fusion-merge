@@ -1,6 +1,6 @@
 import Header from '$lib/components/modules/Header.svelte'
 import userEvent from '@testing-library/user-event'
-import { createRenderComponent } from '../../utils/render-component'
+import { createRenderComponent } from '$utils/render-component'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 let mockPathname = '/'

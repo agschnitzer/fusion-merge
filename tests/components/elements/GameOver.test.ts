@@ -1,7 +1,7 @@
 import GameOver from '$lib/components/elements/GameOver.svelte'
 import '@testing-library/jest-dom'
 import userEvent from '@testing-library/user-event'
-import { createRenderComponent } from '../../utils/render-component'
+import { createRenderComponent } from '$utils/render-component'
 import { describe, expect, it, vi } from 'vitest'
 
 describe('GameOver', () => {

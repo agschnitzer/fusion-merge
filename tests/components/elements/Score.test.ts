@@ -1,5 +1,5 @@
 import Score from '$lib/components/elements/Score.svelte'
-import { createRenderComponent } from '../../utils/render-component'
+import { createRenderComponent } from '$utils/render-component'
 import { describe, expect, it } from 'vitest'
 
 describe('Score', () => {

@@ -1,5 +1,5 @@
 import DateLabel from '$lib/components/elements/DateLabel.svelte'
-import { createRenderComponent } from '../../utils/render-component'
+import { createRenderComponent } from '$utils/render-component'
 import { describe, expect, it, vi } from 'vitest'
 
 describe('DateLabel', () => {
