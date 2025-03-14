@@ -1,18 +1,8 @@
-import Canvas from '$lib/components/modules/Canvas.svelte'
-import '@testing-library/jest-dom'
 import GameOver from '$lib/components/elements/GameOver.svelte'
-import { fireEvent, render, type RenderResult } from '@testing-library/svelte'
-import { getContext } from 'svelte'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-// Mock the svelte getContext function
-vi.mock('svelte', async () => {
-  const actual = await vi.importActual('svelte')
-  return {
-    ...actual,
-    getContext: vi.fn(),
-  }
-})
+import Canvas from '$lib/components/modules/Canvas.svelte'
+import userEvent from '@testing-library/user-event'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createRenderComponent } from '../../utils/render-component'
 
 // Mock GameOver component
 vi.mock('$lib/components/elements/GameOver.svelte', () => ({
@@ -23,36 +13,23 @@ vi.mock('$lib/components/elements/GameOver.svelte', () => ({
 }))
 
 describe('Canvas', () => {
-  const updatePointerStartPositionMock = vi.fn()
-  const throttlePointerEventMock = vi.fn()
-  const resetSwipeStateMock = vi.fn()
-  const handleGameMovementMock = vi.fn()
-
   beforeEach(vi.resetAllMocks)
 
-  const setupTest = (gameState = {}): RenderResult<Canvas> => {
-    const mockGame = {
+  afterAll(vi.resetAllMocks)
+
+  const renderComponent = createRenderComponent(Canvas, {
+    context: {
       canvasId: 'test-canvas',
       initialWidth: 500,
       state: {
         isGameOver: false,
         isGameWon: false,
-        ...gameState,
       },
-      input: {
-        updatePointerStartPosition: updatePointerStartPositionMock,
-        throttlePointerEvent: throttlePointerEventMock,
-        resetSwipeState: resetSwipeStateMock,
-      },
-      handleGameMovement: handleGameMovementMock,
-    }
-    vi.mocked(getContext).mockReturnValue(mockGame)
-
-    return render(Canvas)
-  }
+    },
+  })
 
   it('should render canvas with correct attributes', () => {
-    const { container } = setupTest()
+    const { container } = renderComponent()
     const canvas = container.querySelector('canvas')
 
     expect(canvas).toBeInTheDocument()
@@ -64,40 +41,49 @@ describe('Canvas', () => {
     expect(canvas).toHaveClass('touch-none')
   })
 
-  it('should trigger correct functions when pointer events occur', () => {
-    const { container } = setupTest()
+  it('should trigger correct event handlers when pointer events occur', async () => {
+    const updatePointerStartPositionMock = vi.fn()
+    const throttlePointerEventMock = vi.fn()
+    const resetSwipeStateMock = vi.fn()
+    const user = userEvent.setup()
+    const { container } = renderComponent({
+      context: {
+        input: {
+          updatePointerStartPosition: updatePointerStartPositionMock,
+          throttlePointerEvent: throttlePointerEventMock,
+          resetSwipeState: resetSwipeStateMock,
+        },
+      },
+    })
     const canvas = container.querySelector('canvas')
 
-    if (!canvas) throw new Error('Canvas element not found')
-
+    expect(canvas).toBeInTheDocument()
     // Test pointerdown
-    fireEvent.pointerDown(canvas, { clientX: 100, clientY: 100 })
+    await user.pointer({ target: canvas!, keys: '[TouchA>]', coords: { x: 100, y: 100 } })
     expect(updatePointerStartPositionMock).toHaveBeenCalled()
 
     // Test pointermove
-    fireEvent.pointerMove(canvas, { clientX: 120, clientY: 120 })
+    await user.pointer({ target: canvas!, pointerName: 'TouchA', coords: { x: 120, y: 120 } })
     expect(throttlePointerEventMock).toHaveBeenCalled()
 
     // Test pointerup
-    fireEvent.pointerUp(canvas, { clientX: 150, clientY: 150 })
+    await user.pointer({ target: canvas!, keys: '[/TouchA]', coords: { x: 120, y: 120 } })
     expect(resetSwipeStateMock).toHaveBeenCalled()
   })
 
-  it('should not render GameOver when game is not over', () => {
-    setupTest()
+  it('should not render GameOver component when game is not over', () => {
+    renderComponent()
     const GameOverMock = vi.mocked(GameOver)
     expect(GameOverMock).not.toHaveBeenCalled()
   })
 
-  it('should render GameOver when game is over', () => {
-    setupTest({ isGameOver: true })
-    const GameOverMock = vi.mocked(GameOver)
-    expect(GameOverMock).toHaveBeenCalled()
+  it('should render GameOver component when game is over', () => {
+    renderComponent({ context: { state: { isGameOver: true } } })
+    expect(vi.mocked(GameOver)).toHaveBeenCalled()
   })
 
-  it('should render GameOver when game is won', () => {
-    setupTest({ isGameWon: true })
-    const GameOverMock = vi.mocked(GameOver)
-    expect(GameOverMock).toHaveBeenCalled()
+  it('should render GameOver component when game is won', () => {
+    renderComponent({ context: { state: { isGameWon: true } } })
+    expect(vi.mocked(GameOver)).toHaveBeenCalled()
   })
 })
