@@ -16,6 +16,7 @@
   --color-default: hsl(231, 19%, 100%);
   --color-main: hsl(231, 19%, 20%);
   --color-highlight: hsla(231, 19%, 85%, 0.7);
+  --color-accent: hsl(0, 100%, 70%);
   --color-text: hsl(231, 19%, 52%);
 
   --breakpoint-2xs: 22rem;
@@ -24,11 +25,11 @@
 
 @layer base {
   a {
-    @apply text-text underline decoration-2;
+    @apply text-text underline decoration-2 hover:text-accent;
   }
 
   button {
-    @apply p-3 text-2xl rounded-lg cursor-pointer;
+    @apply p-3 text-2xl bg-highlight rounded-lg cursor-pointer;
   }
 
   strong {
