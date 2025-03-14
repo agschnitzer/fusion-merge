@@ -1,43 +1,35 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, type RenderResult } from '@testing-library/svelte'
 import Score from '$lib/components/elements/Score.svelte'
-import '@testing-library/jest-dom'
-import { getContext } from 'svelte'
-
-// Mock the svelte getContext function
-vi.mock('svelte', async () => {
-  const actual = await vi.importActual('svelte')
-  return {
-    ...actual,
-    getContext: vi.fn(),
-  }
-})
+import { createRenderComponent } from '../../utils/render-component'
+import { describe, expect, it } from 'vitest'
 
 describe('Score', () => {
-  beforeEach(vi.resetAllMocks)
-
-  const setupTest = (): RenderResult<Score> => {
-    const mockGame = {
+  const renderComponent = createRenderComponent(Score, {
+    context: {
       state: {
         score: 100,
         highScore: 500,
       },
-    }
-    vi.mocked(getContext).mockReturnValue(mockGame)
+    },
+  })
 
-    return render(Score)
-  }
-
-  it('should render current score and high score', () => {
-    const { container } = setupTest()
-
+  it('should display current score and high score', () => {
+    const { container } = renderComponent()
     const scoreElements = container.querySelectorAll('.score-card span:not(.sr-only)')
+
     expect(scoreElements[0].textContent).toBe('100')
     expect(scoreElements[1].textContent).toBe('500')
   })
 
-  it('should apply correct styling to score cards', () => {
-    const { container } = setupTest()
+  it('should display 0 when score or highScore is undefined', () => {
+    const { container } = renderComponent({ context: { state: { score: undefined, highScore: undefined } } })
+    const scoreElements = container.querySelectorAll('.score-card span:not(.sr-only)')
+
+    expect(scoreElements[0].textContent).toBe('0')
+    expect(scoreElements[1].textContent).toBe('0')
+  })
+
+  it('should apply correct styling to score elements', () => {
+    const { container } = renderComponent()
     const scoreCards = container.querySelectorAll('.score-card')
 
     expect(scoreCards.length).toBe(2)
@@ -46,11 +38,11 @@ describe('Score', () => {
   })
 
   it('should include screen reader text for accessibility', () => {
-    const { container } = setupTest()
-    const srElements = container.querySelectorAll('.sr-only')
+    const { container } = renderComponent()
+    const scoreElements = container.querySelectorAll('.sr-only')
 
-    expect(srElements.length).toBe(2)
-    expect(srElements[0].textContent).toBe(':')
-    expect(srElements[1].textContent).toBe('score:')
+    expect(scoreElements.length).toBe(2)
+    expect(scoreElements[0].textContent).toBe(':')
+    expect(scoreElements[1].textContent).toBe('score:')
   })
 })
