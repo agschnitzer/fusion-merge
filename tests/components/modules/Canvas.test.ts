@@ -2,7 +2,7 @@ import GameOver from '$lib/components/elements/GameOver.svelte'
 import Canvas from '$lib/components/modules/Canvas.svelte'
 import userEvent from '@testing-library/user-event'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createRenderComponent } from '../../utils/render-component'
+import { createRenderComponent } from '$utils/render-component'
 
 // Mock GameOver component
 vi.mock('$lib/components/elements/GameOver.svelte', () => ({
