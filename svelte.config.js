@@ -7,6 +7,7 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
+      '$routes': 'src/routes',
       '$utils': 'tests/utils',
     },
   },

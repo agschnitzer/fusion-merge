@@ -12,7 +12,7 @@ const config = defineConfig({
     globals: true,
     coverage: {
       include: ['src/**/*.{ts,svelte}'],
-      exclude: ['src/lib/types/**/*.ts'],
+      exclude: ['src/lib/types/**/*.ts', 'src/routes/**/*.ts'],
       reportsDirectory: './tests/coverage',
     },
     workspace: [

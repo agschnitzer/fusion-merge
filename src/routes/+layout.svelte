@@ -10,8 +10,6 @@
   let { children } = $props()
 
   const game = createGame()
-
-  // Create a new game instance to use the resetGame method here
   setContext('game', game)
 </script>
 

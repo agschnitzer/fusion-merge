@@ -6,18 +6,14 @@
   const headingId = 'about-heading'
 </script>
 
-{#snippet paragraphs(text: string[])}
-  {#each text as p}
-    <p>{@html p}</p>
-  {/each}
-{/snippet}
-
 <article aria-labelledby={headingId} class="mb-4 space-y-6 font-sans">
   <header class="mb-4">
     <h2 id={headingId} class="heading-2">{data.heading}</h2>
   </header>
   <div class="space-y-4">
-    {@render paragraphs(data.text)}
+    {#each data.text as p}
+      <p>{@html p}</p>
+    {/each}
   </div>
 
   {#each data.sections as { id, heading, list, text }}
@@ -27,7 +23,9 @@
         <h3 id={headingId} class="heading-3">{heading}</h3>
       </header>
       {#if text}
-        {@render paragraphs(text)}
+        {#each text as p}
+          <p>{@html p}</p>
+        {/each}
       {/if}
       {#if list}
         <ul class="list-disc pl-4 space-y-2">
@@ -39,8 +37,6 @@
     </section>
   {/each}
   <footer>
-    <DateLabel date={data.meta.publishedOn} class="label">
-      Last updated on
-    </DateLabel>
+    <DateLabel date={data.meta.publishedOn} class="label">Last updated on</DateLabel>
   </footer>
 </article>
