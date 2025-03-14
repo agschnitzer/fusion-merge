@@ -9,6 +9,6 @@
   <div class="text-center">
     <h2 class="heading-1">{game.state.isGameOver ? 'Game Over' : 'Fusion Complete'}</h2>
     <p class="mb-4 heading-2">You scored {game.state.score ?? 0} points in {game.state.moveCount ?? 0} moves.</p>
-    <button onclick={game.resetGame} class="py-2 bg-main text-default">Play again</button>
+    <button onclick={game.resetGame} class="py-2 bg-main text-default hover:bg-accent">Play again</button>
   </div>
 </div>
