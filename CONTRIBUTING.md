@@ -15,8 +15,8 @@ that might be helpful.
 
 ### Submitting Pull Requests
 
-If you would like to contribute to the project, you can do so by opening a pull request. Fork the repository, make your changes, and
-submit a pull request using the guidelines below:
+If you would like to contribute to the project, you can do so by opening a pull request. Fork the repository, make your changes, and ensure
+they are properly tested. Once you’re ready, submit a pull request following the guidelines below:
 
 - **Branches**: Create a new branch for your changes. Use a descriptive name that reflects the purpose of your changes (hyphenated in
   lowercase) with one of the following prefixes:
