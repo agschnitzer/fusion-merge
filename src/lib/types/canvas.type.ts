@@ -8,6 +8,8 @@ import type { Tile } from '$lib/types/grid.type'
  * @interface CanvasState
  */
 export interface CanvasState {
+  /** The options for the canvas. */
+  _options: CanvasOptions
   /**
    * Animates the entry of a tile or tiles into the canvas.
    * @since 1.0.0
