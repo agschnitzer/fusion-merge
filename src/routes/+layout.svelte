@@ -30,7 +30,13 @@
   <meta property="og:url" content={page.data.meta.url}>
   <meta name="twitter:card" content="summary_large_image">
 
-  <!-- TODO: Add image -->
+  <meta property="og:image" content={page.data.meta.image.src}>
+  <meta property="twitter:image" content={page.data.meta.image.src}>
+  <meta property="og:image:alt" content={page.data.meta.image.alt}>
+  <meta property="twitter:image:alt" content={page.data.meta.image.alt}>
+  <meta property="og:image:width" content={page.data.meta.image.width.toString()}>
+  <meta property="og:image:height" content={page.data.meta.image.height.toString()}>
+  <meta property="og:image:type" content={page.data.meta.image.format}>
 </svelte:head>
 
 <DateLabel date={page.data.meta.publishedOn} class="sr-only">Published on</DateLabel>

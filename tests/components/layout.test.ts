@@ -14,6 +14,13 @@ vi.mock('$app/state', () => ({
         url: 'http://test-url',
         publishedOn: new Date('2025-01-01').toISOString(),
         updatedAt: new Date('2025-01-01').toISOString(),
+        image: {
+          src: '/test-image.png',
+          alt: 'Test Image',
+          width: 1200,
+          height: 630,
+          format: 'image/png',
+        },
       },
     },
   },
@@ -84,6 +91,15 @@ describe('Layout', () => {
     expect(document.querySelector('meta[property="og:description"]')).toHaveAttribute('content', 'Test Description')
     expect(document.querySelector('meta[property="og:url"]')).toHaveAttribute('content', 'http://test-url')
     expect(document.querySelector('meta[property="twitter:title"]')).toHaveAttribute('content', 'Test Title')
+  })
+
+  it('should set OpenGraph image meta tags', () => {
+    renderComponent()
+    expect(document.querySelector('meta[property="og:image"]')).toHaveAttribute('content', '/test-image.png')
+    expect(document.querySelector('meta[property="og:image:alt"]')).toHaveAttribute('content', 'Test Image')
+    expect(document.querySelector('meta[property="og:image:width"]')).toHaveAttribute('content', '1200')
+    expect(document.querySelector('meta[property="og:image:height"]')).toHaveAttribute('content', '630')
+    expect(document.querySelector('meta[property="og:image:type"]')).toHaveAttribute('content', 'image/png')
   })
 
   it('should create a game instance', () => {
