@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - feat/**
-      - bug/**
+      - fix/**
   workflow_dispatch:
 
 jobs:
