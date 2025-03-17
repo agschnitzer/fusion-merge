@@ -21,6 +21,6 @@ they are properly tested. Once you’re ready, submit a pull request following t
 - **Branches**: Create a new branch for your changes. Use a descriptive name that reflects the purpose of your changes (hyphenated in
   lowercase) with one of the following prefixes:
     - `feat/`: For new features
-    - `bug/`: For bug fixes
+    - `fix/`: For bug fixes
     - `chore/`: For maintenance tasks, updates to documentation, etc.
 - **Commits**: If possible, include the pull request or issue number in your commit messages. For example, `Add new feature (#123)`.
