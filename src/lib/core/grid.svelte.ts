@@ -128,7 +128,7 @@ export const createGrid = (size: number): GridState => {
           score += Math.pow(2, adjacentTile.value)
           highScore = Math.max(score, highScore)
 
-          isGameWon = adjacentTile.value === 10
+          if (adjacentTile.value === 10) isGameWon = true
           hasMoved = updateTilePositions(moveToRow, moveToCol, mergeCheckRow, mergeCheckCol)
           grid[mergeCheckRow][mergeCheckCol]!.mergedThisTurn = true
 
