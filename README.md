@@ -1,4 +1,6 @@
-## Fusion Merge
+![Fusion Merge](/static/fusion-merge-open-graph.png)
+
+## Fusion Merge ![License](https://img.shields.io/badge/License-MIT-blue) ![Workflow Status](https://github.com/agschnitzer/fusion-merge/actions/workflows/ci.yml/badge.svg?branch=main)
 
 ### About Fusion Merge
 
