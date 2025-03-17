@@ -123,7 +123,7 @@ describe('createGrid()', () => {
     state.grid = [
       [{ value: 9, row: 0, column: 0, mergedThisTurn: false }, { value: 9, row: 0, column: 1, mergedThisTurn: false }, null, null],
       [null, null, null, null],
-      [null, null, null, null],
+      [{ value: 1, row: 2, column: 0, mergedThisTurn: false }, { value: 1, row: 2, column: 1, mergedThisTurn: false }, null, null],
       [null, null, null, null],
     ]
 
